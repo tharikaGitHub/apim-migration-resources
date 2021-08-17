@@ -852,6 +852,10 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
     }
 
     @Override
+    public void updateIpBasedBlockingConditions() throws APIMigrationException {
+    }
+
+    @Override
     public void checkCrossTenantAPISubscriptions(TenantManager tenantManager, boolean ignoreCrossTenantSubscriptions)
             throws APIMigrationException {
     }

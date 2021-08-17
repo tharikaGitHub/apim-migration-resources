@@ -1276,6 +1276,10 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
     public void updateScopeRoleMappings() throws APIMigrationException {
     }
 
+    @Override
+    public void updateIpBasedBlockingConditions() throws APIMigrationException {
+    }
+
     /**
      * This method will be used to populate SP_APP table
      */

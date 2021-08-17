@@ -120,6 +120,13 @@ public interface MigrationClient {
     void updateScopeRoleMappings() throws APIMigrationException;
 
     /**
+     * This method is used to update ip based deny policies/blocking conditions during 2.x to 3.2 migrations
+     *
+     * @throws APIMigrationException
+     */
+    void updateIpBasedBlockingConditions() throws APIMigrationException;
+
+    /**
      * This method is used to check the existence of cross tenant subscriptions
      * during the migrations to 3.2
      *

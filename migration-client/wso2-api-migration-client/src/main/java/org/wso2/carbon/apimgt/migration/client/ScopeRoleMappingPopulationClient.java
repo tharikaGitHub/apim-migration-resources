@@ -181,6 +181,10 @@ public class ScopeRoleMappingPopulationClient extends MigrationClientBase implem
     }
 
     @Override
+    public void updateIpBasedBlockingConditions() throws APIMigrationException {
+    }
+
+    @Override
     public void scopeMigration() throws APIMigrationException {
     }
 
