@@ -140,6 +140,8 @@ public class APIMMigrationService implements ServerStartupObserver {
                 log.info("Populating WSO2 API Manager Scope-Role Mapping");
                 scopeRoleMappingPopulation.updateScopeRoleMappings();
                 scopeRoleMappingPopulation.populateScopeRoleMapping();
+                log.info("Migrating WSO2 API Manager IP based block conditions");
+                migrateFrom210.updateIpBasedBlockingConditions();
                 log.info("Migrated Successfully to API Manager 3.1");
                 log.info("Starting Migration from API Manager 3.1 to 3.2");
                 MigrationClient migrateFrom310 = new MigrateFrom310(tenants, blackListTenants,
