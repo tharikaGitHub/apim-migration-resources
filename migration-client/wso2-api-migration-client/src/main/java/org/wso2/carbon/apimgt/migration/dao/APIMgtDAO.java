@@ -20,6 +20,7 @@ package org.wso2.carbon.apimgt.migration.dao;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.wso2.carbon.apimgt.api.model.BlockConditionsDTO;
 import org.wso2.carbon.apimgt.impl.utils.APIMgtDBUtil;
 import org.wso2.carbon.apimgt.migration.APIMigrationException;
 import org.wso2.carbon.apimgt.migration.dto.AMAPIResourceScopeMappingDTO;
@@ -102,6 +103,8 @@ public class APIMgtDAO {
     private static String INSERT_URL_MAPPINGS_FOR_WS_APIS =
             "INSERT INTO AM_API_URL_MAPPING (API_ID,HTTP_METHOD,AUTH_SCHEME,URL_PATTERN) VALUES (?,?,?,?)";
     private static String GET_ALL_API_IDENTIFIERS = "SELECT API_PROVIDER, API_NAME, API_VERSION FROM AM_API";
+    private static String GET_AM_BLOCK_CONDITIONS = "SELECT * FROM AM_BLOCK_CONDITIONS";
+    private static String UPDATE_AM_BLOCK_CONDITIONS_VALUE_BY_UUID = "UPDATE AM_BLOCK_CONDITIONS SET VALUE = ? WHERE UUID = ? ";
 
     private static String CROSS_TENANT_API_SUBSCRIPTIONS =
             "SELECT AM_API.API_PROVIDER AS API_PROVIDER, AM_SUBSCRIBER.TENANT_ID AS SUBSCRIBER_TENANT_ID " +
@@ -612,5 +615,64 @@ public class APIMgtDAO {
                     , e);
         }
         return oauthAppInfoDtoSet;
+    }
+
+    /**
+     * This method is used to get data from AM_BLOCK_CONDITIONS table
+     *
+     * @return
+     * @throws APIMigrationException
+     */
+    public List<BlockConditionsDTO> getBlockConditions() throws APIMigrationException {
+        List<BlockConditionsDTO> blockConditionsDTOList = new ArrayList<BlockConditionsDTO>();
+
+        try (Connection connection = APIMgtDBUtil.getConnection()) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement(GET_AM_BLOCK_CONDITIONS)) {
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    while (resultSet.next()) {
+                        BlockConditionsDTO blockConditionsDTO = new BlockConditionsDTO();
+                        blockConditionsDTO.setEnabled(resultSet.getBoolean("ENABLED"));
+                        blockConditionsDTO.setConditionType(resultSet.getString("TYPE"));
+                        blockConditionsDTO.setConditionValue(resultSet.getString("VALUE"));
+                        blockConditionsDTO.setConditionId(resultSet.getInt("CONDITION_ID"));
+                        blockConditionsDTO.setUUID(resultSet.getString("UUID"));
+                        blockConditionsDTO.setTenantDomain(resultSet.getString("DOMAIN"));
+                        blockConditionsDTOList.add(blockConditionsDTO);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new APIMigrationException("SQLException when executing: ".concat(GET_AM_BLOCK_CONDITIONS)
+                    , e);
+        }
+        return blockConditionsDTOList;
+    }
+
+    /**
+     * This method is used to set the block condition value in the DB using the UUID
+     *
+     * @param blockConditionsDTOList Block conditions list
+     * @throws APIMigrationException
+     */
+    public void updateIpBasedBlockConditionsValue(List<BlockConditionsDTO> blockConditionsDTOList) throws APIMigrationException {
+
+        try (Connection connection = APIMgtDBUtil.getConnection()) {
+            connection.setAutoCommit(false);
+            try (PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_AM_BLOCK_CONDITIONS_VALUE_BY_UUID)) {
+                for (BlockConditionsDTO blockConditionsDTO : blockConditionsDTOList) {
+                    preparedStatement.setString(1, blockConditionsDTO.getConditionValue());
+                    preparedStatement.setString(2, blockConditionsDTO.getUUID());
+                    preparedStatement.addBatch();
+                }
+                preparedStatement.executeBatch();
+                connection.commit();
+            } catch (SQLException e) {
+                connection.rollback();
+                throw new APIMigrationException("SQLException when executing: ".concat(UPDATE_AM_BLOCK_CONDITIONS_VALUE_BY_UUID),
+                        e);
+            }
+        } catch (SQLException e) {
+            throw new APIMigrationException("SQLException when executing: ".concat(UPDATE_AM_BLOCK_CONDITIONS_VALUE_BY_UUID), e);
+        }
     }
 }

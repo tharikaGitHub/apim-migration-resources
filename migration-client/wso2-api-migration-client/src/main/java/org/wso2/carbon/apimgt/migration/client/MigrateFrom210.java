@@ -18,18 +18,14 @@ package org.wso2.carbon.apimgt.migration.client;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.wso2.carbon.apimgt.api.model.BlockConditionsDTO;
 import org.wso2.carbon.apimgt.migration.APIMigrationException;
 import org.wso2.carbon.apimgt.migration.client.sp_migration.APIMStatMigrationException;
+import org.wso2.carbon.apimgt.migration.dao.APIMgtDAO;
 import org.wso2.carbon.apimgt.migration.util.RegistryService;
-import org.wso2.carbon.registry.core.exceptions.RegistryException;
-import org.wso2.carbon.user.api.Tenant;
 import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.user.core.tenant.TenantManager;
-import org.wso2.carbon.utils.CarbonUtils;
-import org.wso2.carbon.utils.FileUtil;
 
-import java.io.File;
-import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -95,6 +91,26 @@ public class MigrateFrom210 extends MigrationClientBase implements MigrationClie
 
     @Override
     public void updateScopeRoleMappings() throws APIMigrationException {
+    }
+
+    @Override
+    public void updateIpBasedBlockingConditions() throws APIMigrationException {
+
+        APIMgtDAO apiMgtDAO = APIMgtDAO.getInstance();
+        List<BlockConditionsDTO> blockConditionsDTOs = apiMgtDAO.getBlockConditions();
+
+        // Change values of the Ip based block conditions
+        for(BlockConditionsDTO blockCondition : blockConditionsDTOs) {
+            if (blockCondition.getConditionType().equals("IP")){
+                String value = blockCondition.getConditionValue();
+                String [] splits  = value.split(":");
+                String jsonString = "{" +"\"invert\":false,\"fixedIp\":\"" + splits[1] + "\"}";
+                blockCondition.setConditionValue(jsonString);
+            }
+        }
+
+        // Update block conditions
+        apiMgtDAO.updateIpBasedBlockConditionsValue(blockConditionsDTOs);
     }
 
     @Override

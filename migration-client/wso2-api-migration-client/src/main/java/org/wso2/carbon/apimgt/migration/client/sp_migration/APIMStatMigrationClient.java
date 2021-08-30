@@ -192,6 +192,10 @@ public class APIMStatMigrationClient extends MigrationClientBase implements Migr
     }
 
     @Override
+    public void updateIpBasedBlockingConditions() throws APIMigrationException {
+    }
+
+    @Override
     public void checkCrossTenantAPISubscriptions(TenantManager tenantManager, boolean ignoreCrossTenantSubscriptions)
             throws APIMigrationException {
     }
