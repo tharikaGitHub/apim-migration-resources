@@ -46,6 +46,7 @@ import org.wso2.carbon.apimgt.migration.dao.APIMgtDAO;
 import org.wso2.carbon.apimgt.migration.dto.*;
 import org.wso2.carbon.apimgt.migration.util.Constants;
 import org.wso2.carbon.apimgt.migration.util.RegistryService;
+import org.wso2.carbon.apimgt.migration.util.TenantUtil;
 import org.wso2.carbon.apimgt.persistence.APIConstants;
 import org.wso2.carbon.apimgt.persistence.utils.RegistryPersistenceUtil;
 import org.wso2.carbon.apimgt.persistence.exceptions.APIPersistenceException;
@@ -431,10 +432,13 @@ public class MigrateFrom320 extends MigrationClientBase implements MigrationClie
         APIMgtDAO apiMgtDAO = APIMgtDAO.getInstance();
 
         for (Tenant tenant : getTenantsArray()) {
+            //load tenants to add tenant specific resident key manager with uuids to the AM_KEY_MANAGER table
+            if (!tenant.getDomain().equals(MultitenantConstants.SUPER_TENANT_DOMAIN_NAME)) {
+                TenantUtil.loadTenantConfigBlockingMode(tenant);
+            }
             apiMgtDAO.replaceKeyMappingKMNamebyUUID(tenant);
             apiMgtDAO.replaceRegistrationKMNamebyUUID(tenant);
         }
-
     }
   
     public void migrateLabelsToVhosts() {
