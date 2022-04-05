@@ -91,6 +91,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import com.google.gson.Gson;
 import org.xml.sax.InputSource;
 
@@ -432,12 +433,27 @@ public class MigrateFrom320 extends MigrationClientBase implements MigrationClie
         APIMgtDAO apiMgtDAO = APIMgtDAO.getInstance();
 
         for (Tenant tenant : getTenantsArray()) {
-            //load tenants to add tenant specific resident key manager with uuids to the AM_KEY_MANAGER table
-            if (!tenant.getDomain().equals(MultitenantConstants.SUPER_TENANT_DOMAIN_NAME)) {
-                TenantUtil.loadTenantConfigBlockingMode(tenant);
-            }
+            //Add tenant specific resident key manager with uuids to the AM_KEY_MANAGER table
+            addDefaultKM(apiMgtDAO, tenant.getDomain());
             apiMgtDAO.replaceKeyMappingKMNamebyUUID(tenant);
             apiMgtDAO.replaceRegistrationKMNamebyUUID(tenant);
+        }
+    }
+
+    private void addDefaultKM(APIMgtDAO apiMgtDAO, String tenantDomain) throws APIMigrationException {
+        if (apiMgtDAO.getKeyManagerConfigurationByName(tenantDomain,
+                org.wso2.carbon.apimgt.impl.APIConstants.KeyManager.DEFAULT_KEY_MANAGER) == null) {
+
+            KeyManagerConfigurationDTO keyManagerConfigurationDTO = new KeyManagerConfigurationDTO();
+            keyManagerConfigurationDTO.setName(org.wso2.carbon.apimgt.impl.APIConstants.KeyManager.DEFAULT_KEY_MANAGER);
+            keyManagerConfigurationDTO.setEnabled(true);
+            keyManagerConfigurationDTO.setUuid(UUID.randomUUID().toString());
+            keyManagerConfigurationDTO.setTenantDomain(tenantDomain);
+            keyManagerConfigurationDTO.setDescription(
+                    org.wso2.carbon.apimgt.impl.APIConstants.KeyManager.DEFAULT_KEY_MANAGER_DESCRIPTION);
+            keyManagerConfigurationDTO
+                    .setType(org.wso2.carbon.apimgt.impl.APIConstants.KeyManager.DEFAULT_KEY_MANAGER_TYPE);
+            apiMgtDAO.addKeyManagerConfiguration(keyManagerConfigurationDTO);
         }
     }
   

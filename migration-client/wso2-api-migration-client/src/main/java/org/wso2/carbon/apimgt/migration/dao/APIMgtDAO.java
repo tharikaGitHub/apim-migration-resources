@@ -39,6 +39,7 @@ import org.wso2.carbon.apimgt.migration.dto.APIInfoDTO;
 import org.wso2.carbon.apimgt.migration.dto.APIInfoScopeMappingDTO;
 import org.wso2.carbon.apimgt.migration.dto.APIScopeMappingDTO;
 import org.wso2.carbon.apimgt.migration.dto.AMAPIResourceScopeMappingDTO;
+import org.wso2.carbon.apimgt.migration.dto.KeyManagerConfigurationDTO;
 import org.wso2.carbon.apimgt.migration.util.Constants;
 
 import java.io.ByteArrayInputStream;
@@ -48,6 +49,7 @@ import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -192,6 +194,9 @@ public class APIMgtDAO {
                     "AM_APPLICATION_REGISTRATION.REG_ID = ?";
 
     private static String GET_API_ID_OF_WS_APIS = "SELECT API_ID FROM AM_API WHERE API_TYPE = 'WS'";
+    private static final String ADD_KEY_MANAGER =
+            " INSERT INTO AM_KEY_MANAGER (UUID,NAME,DESCRIPTION,TYPE,TENANT_DOMAIN,ENABLED," +
+                    "DISPLAY_NAME) VALUES (?,?,?,?,?,?,?)";
 
     private APIMgtDAO() {
 
@@ -1096,6 +1101,79 @@ public class APIMgtDAO {
             }
         } catch (SQLException e) {
             throw new APIMigrationException("Error while removing URL template(s) from the database " + e);
+        }
+    }
+
+    public void addKeyManagerConfiguration(KeyManagerConfigurationDTO keyManagerConfigurationDTO)
+            throws APIMigrationException {
+
+        try (Connection conn = APIMgtDBUtil.getConnection()) {
+            conn.setAutoCommit(false);
+            try (PreparedStatement preparedStatement = conn
+                    .prepareStatement(ADD_KEY_MANAGER)) {
+                preparedStatement.setString(1, keyManagerConfigurationDTO.getUuid());
+                preparedStatement.setString(2, keyManagerConfigurationDTO.getName());
+                preparedStatement.setString(3, keyManagerConfigurationDTO.getDescription());
+                preparedStatement.setString(4, keyManagerConfigurationDTO.getType());
+                preparedStatement.setString(5, keyManagerConfigurationDTO.getTenantDomain());
+                preparedStatement.setBoolean(6, keyManagerConfigurationDTO.isEnabled());
+                preparedStatement.setString(7, keyManagerConfigurationDTO.getDisplayName());
+                preparedStatement.executeUpdate();
+                conn.commit();
+            } catch (SQLException e) {
+                conn.rollback();
+                if (e instanceof SQLIntegrityConstraintViolationException) {
+                    if (getKeyManagerConfigurationByName(conn, keyManagerConfigurationDTO.getTenantDomain(),
+                            keyManagerConfigurationDTO.getName()) != null) {
+                        log.warn(keyManagerConfigurationDTO.getName() + " Key Manager Already Registered in tenant" +
+                                keyManagerConfigurationDTO.getTenantDomain());
+                    } else {
+                        throw new APIMigrationException("Error while Storing key manager configuration with name " +
+                                keyManagerConfigurationDTO.getName() + " in tenant " +
+                                keyManagerConfigurationDTO.getTenantDomain(), e);
+                    }
+                }
+            }
+        } catch (SQLException | IOException e) {
+            throw new APIMigrationException(
+                    "Error while Storing key manager configuration with name " + keyManagerConfigurationDTO.getName() +
+                            " in tenant " + keyManagerConfigurationDTO.getTenantDomain(), e);
+        }
+    }
+
+    private KeyManagerConfigurationDTO getKeyManagerConfigurationByName(Connection connection, String tenantDomain,
+            String name)
+            throws SQLException, IOException {
+
+        final String query = "SELECT * FROM AM_KEY_MANAGER WHERE NAME = ? AND TENANT_DOMAIN = ?";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setString(1, name);
+            preparedStatement.setString(2, tenantDomain);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    KeyManagerConfigurationDTO keyManagerConfigurationDTO = new KeyManagerConfigurationDTO();
+                    String uuid = resultSet.getString("UUID");
+                    keyManagerConfigurationDTO.setUuid(uuid);
+                    keyManagerConfigurationDTO.setName(resultSet.getString("NAME"));
+                    keyManagerConfigurationDTO.setDisplayName(resultSet.getString("DISPLAY_NAME"));
+                    keyManagerConfigurationDTO.setDescription(resultSet.getString("DESCRIPTION"));
+                    keyManagerConfigurationDTO.setType(resultSet.getString("TYPE"));
+                    keyManagerConfigurationDTO.setEnabled(resultSet.getBoolean("ENABLED"));
+                    keyManagerConfigurationDTO.setTenantDomain(tenantDomain);
+                    return keyManagerConfigurationDTO;
+                }
+            }
+        }
+        return null;
+    }
+
+    public KeyManagerConfigurationDTO getKeyManagerConfigurationByName(String tenantDomain, String name)
+            throws APIMigrationException {
+        try (Connection conn = APIMgtDBUtil.getConnection()) {
+            return getKeyManagerConfigurationByName(conn, tenantDomain, name);
+        } catch (SQLException | IOException e) {
+            throw new APIMigrationException(
+                    "Error while retrieving key manager configuration for " + name + " in tenant " + tenantDomain, e);
         }
     }
 }
