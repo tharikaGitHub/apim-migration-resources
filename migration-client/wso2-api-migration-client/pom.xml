@@ -6,7 +6,7 @@
 
     <groupId>org.wso2.carbon</groupId>
     <artifactId>org.wso2.carbon.apimgt.migrate.client</artifactId>
-    <version>4.0.0</version>
+    <version>4.0.0-${buildNumber}</version>
     <packaging>bundle</packaging>
 
     <repositories>
