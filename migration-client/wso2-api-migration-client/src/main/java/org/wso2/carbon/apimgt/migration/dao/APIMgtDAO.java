@@ -18,6 +18,7 @@
 
 package org.wso2.carbon.apimgt.migration.dao;
 
+import com.google.gson.Gson;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.io.IOUtils;
@@ -195,8 +196,8 @@ public class APIMgtDAO {
 
     private static String GET_API_ID_OF_WS_APIS = "SELECT API_ID FROM AM_API WHERE API_TYPE = 'WS'";
     private static final String ADD_KEY_MANAGER =
-            " INSERT INTO AM_KEY_MANAGER (UUID,NAME,DESCRIPTION,TYPE,TENANT_DOMAIN,ENABLED," +
-                    "DISPLAY_NAME) VALUES (?,?,?,?,?,?,?)";
+            " INSERT INTO AM_KEY_MANAGER (UUID,NAME,DESCRIPTION,TYPE,CONFIGURATION,TENANT_DOMAIN,ENABLED," +
+                    "DISPLAY_NAME) VALUES (?,?,?,?,?,?,?,?)";
 
     private APIMgtDAO() {
 
@@ -1115,9 +1116,11 @@ public class APIMgtDAO {
                 preparedStatement.setString(2, keyManagerConfigurationDTO.getName());
                 preparedStatement.setString(3, keyManagerConfigurationDTO.getDescription());
                 preparedStatement.setString(4, keyManagerConfigurationDTO.getType());
-                preparedStatement.setString(5, keyManagerConfigurationDTO.getTenantDomain());
-                preparedStatement.setBoolean(6, keyManagerConfigurationDTO.isEnabled());
-                preparedStatement.setString(7, keyManagerConfigurationDTO.getDisplayName());
+                String configurationJson = new Gson().toJson(keyManagerConfigurationDTO.getAdditionalProperties());
+                preparedStatement.setBinaryStream(5, new ByteArrayInputStream(configurationJson.getBytes()));
+                preparedStatement.setString(6, keyManagerConfigurationDTO.getTenantDomain());
+                preparedStatement.setBoolean(7, keyManagerConfigurationDTO.isEnabled());
+                preparedStatement.setString(8, keyManagerConfigurationDTO.getDisplayName());
                 preparedStatement.executeUpdate();
                 conn.commit();
             } catch (SQLException e) {
