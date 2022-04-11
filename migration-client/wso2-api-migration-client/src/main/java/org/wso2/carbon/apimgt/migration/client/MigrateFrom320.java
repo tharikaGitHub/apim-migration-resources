@@ -578,12 +578,13 @@ public class MigrateFrom320 extends MigrationClientBase implements MigrationClie
                 String unnecessaryFaultHandler1 = "org.wso2.carbon.apimgt.usage.publisher.APIMgtFaultHandler";
                 String unnecessaryFaultHandler2 = "org.wso2.carbon.apimgt.gateway.handlers.analytics.APIMgtFaultHandler";
                 org.wso2.carbon.registry.api.Collection seqCollection = null;
-                try {
+                String resourcePath = org.wso2.carbon.apimgt.impl.APIConstants.API_CUSTOM_SEQUENCE_LOCATION
+                        + RegistryConstants.PATH_SEPARATOR
+                        + org.wso2.carbon.apimgt.impl.APIConstants.API_CUSTOM_SEQUENCE_TYPE_FAULT;
+                if (registry.resourceExists(resourcePath)) {
                     seqCollection = (org.wso2.carbon.registry.api.Collection) registry
-                            .get(org.wso2.carbon.apimgt.impl.APIConstants.API_CUSTOM_SEQUENCE_LOCATION
-                                    + RegistryConstants.PATH_SEPARATOR
-                                    + org.wso2.carbon.apimgt.impl.APIConstants.API_CUSTOM_SEQUENCE_TYPE_FAULT);
-                } catch (ResourceNotFoundException rnfe) {
+                            .get(resourcePath);
+                } else {
                     log.warn("No fault sequences found for tenant: " + tenant.getDomain());
                 }
                 if (seqCollection != null) {
