@@ -173,7 +173,10 @@ public abstract class MigrationClientBase {
         }
     }
 
-    protected List<Tenant> getTenantsArray() { return tenantsArray; }
+    protected List<Tenant> getTenantsArray() {
+        tenantsArray.removeIf(t -> (!t.isActive()));
+        return tenantsArray;
+    }
 
     protected void updateAPIManagerDatabase(String sqlScriptPath) throws SQLException {
         log.info("Database migration for API Manager started");
