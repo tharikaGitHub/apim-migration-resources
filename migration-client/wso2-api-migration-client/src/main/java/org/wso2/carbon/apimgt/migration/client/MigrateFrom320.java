@@ -56,6 +56,7 @@ import org.wso2.carbon.governance.api.generic.dataobjects.GenericArtifact;
 import org.wso2.carbon.governance.api.util.GovernanceUtils;
 import org.wso2.carbon.governance.api.generic.GenericArtifactManager;
 import org.wso2.carbon.registry.core.exceptions.RegistryException;
+import org.wso2.carbon.registry.core.exceptions.ResourceNotFoundException;
 import org.wso2.carbon.user.api.Tenant;
 import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.user.core.tenant.TenantManager;
@@ -565,6 +566,7 @@ public class MigrateFrom320 extends MigrationClientBase implements MigrationClie
     public void removeUnnecessaryFaultHandlers() {
         try {
             List<Tenant> tenants = APIUtil.getAllTenantsWithSuperTenant();
+            tenants.removeIf(t -> (!t.isActive()));
             for (Tenant tenant : tenants) {
                 int apiTenantId = tenantManager.getTenantId(tenant.getDomain());
                 APIUtil.loadTenantRegistry(apiTenantId);
@@ -575,11 +577,16 @@ public class MigrateFrom320 extends MigrationClientBase implements MigrationClie
                 // Fault Handlers that needs to be removed from fault sequences
                 String unnecessaryFaultHandler1 = "org.wso2.carbon.apimgt.usage.publisher.APIMgtFaultHandler";
                 String unnecessaryFaultHandler2 = "org.wso2.carbon.apimgt.gateway.handlers.analytics.APIMgtFaultHandler";
-                org.wso2.carbon.registry.api.Collection seqCollection;
-                seqCollection = (org.wso2.carbon.registry.api.Collection) registry
-                        .get(org.wso2.carbon.apimgt.impl.APIConstants.API_CUSTOM_SEQUENCE_LOCATION
-                                + RegistryConstants.PATH_SEPARATOR
-                                + org.wso2.carbon.apimgt.impl.APIConstants.API_CUSTOM_SEQUENCE_TYPE_FAULT);
+                org.wso2.carbon.registry.api.Collection seqCollection = null;
+                String resourcePath = org.wso2.carbon.apimgt.impl.APIConstants.API_CUSTOM_SEQUENCE_LOCATION
+                        + RegistryConstants.PATH_SEPARATOR
+                        + org.wso2.carbon.apimgt.impl.APIConstants.API_CUSTOM_SEQUENCE_TYPE_FAULT;
+                if (registry.resourceExists(resourcePath)) {
+                    seqCollection = (org.wso2.carbon.registry.api.Collection) registry
+                            .get(resourcePath);
+                } else {
+                    log.warn("No fault sequences found for tenant: " + tenant.getDomain());
+                }
                 if (seqCollection != null) {
                     String[] childPaths = seqCollection.getChildren();
                     for (String childPath : childPaths) {
