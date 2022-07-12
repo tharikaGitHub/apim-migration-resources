@@ -174,7 +174,6 @@ public abstract class MigrationClientBase {
     }
 
     protected List<Tenant> getTenantsArray() {
-        tenantsArray.removeIf(t -> (!t.isActive()));
         return tenantsArray;
     }
 
