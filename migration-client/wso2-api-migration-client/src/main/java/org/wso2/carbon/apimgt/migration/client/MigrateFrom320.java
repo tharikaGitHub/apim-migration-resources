@@ -178,6 +178,10 @@ public class MigrateFrom320 extends MigrationClientBase implements MigrationClie
     public void spMigration() throws APIMigrationException {
     }
 
+    @Override
+    public void updateAPIPropertyVisibility() {
+    }
+
     public void updateRegistryPathsOfIconAndWSDL() throws APIMigrationException {
         try {
             List<Tenant> tenants = APIUtil.getAllTenantsWithSuperTenant();

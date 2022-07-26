@@ -20,6 +20,7 @@ package org.wso2.carbon.apimgt.migration.util;
 
 import org.wso2.carbon.apimgt.api.APIManagementException;
 import org.wso2.carbon.apimgt.api.model.API;
+import org.wso2.carbon.apimgt.migration.APIMigrationException;
 import org.wso2.carbon.governance.api.generic.dataobjects.GenericArtifact;
 import org.wso2.carbon.registry.core.exceptions.RegistryException;
 import org.wso2.carbon.user.api.Tenant;
@@ -81,6 +82,8 @@ public interface RegistryService {
     void updateGenericAPIArtifact(String resourcePath, GenericArtifact artifact);
 
     void updateEnableStoreInRxt(String resourcePath, GenericArtifact artifact);
+
+    void updateAPIPropertyVisibility(String path);
 }
 
 

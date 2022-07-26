@@ -117,4 +117,10 @@ public interface MigrationClient {
      * @throws APIMigrationException
      */
     void updateScopeRoleMappings() throws APIMigrationException;
+
+    /**
+     * This method is used to migrate properties to 3.2 with devportal visibility intact
+     *
+     */
+    void updateAPIPropertyVisibility() throws APIMigrationException;
 }

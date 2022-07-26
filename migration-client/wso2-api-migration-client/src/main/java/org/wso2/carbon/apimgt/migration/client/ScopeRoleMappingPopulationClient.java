@@ -188,6 +188,10 @@ public class ScopeRoleMappingPopulationClient extends MigrationClientBase implem
     public void spMigration() throws APIMigrationException {
     }
 
+    @Override
+    public void updateAPIPropertyVisibility() {
+    }
+
     /**
      * This method is used to update the scopes of the user roles which will be retrieved based on the
      * permissions assigned.

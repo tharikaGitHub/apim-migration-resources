@@ -100,6 +100,10 @@ public class MigrateFrom200 extends MigrationClientBase implements MigrationClie
     public void updateScopeRoleMappings() throws APIMigrationException {
     }
 
+    @Override
+    public void updateAPIPropertyVisibility() throws APIMigrationException {
+    }
+
     public void addDefaultRoleCreationConfig() throws APIMigrationException {
         log.info("Add config in tenant-conf.json to enable default roles creation.");
         for (Tenant tenant : getTenantsArray()) {
