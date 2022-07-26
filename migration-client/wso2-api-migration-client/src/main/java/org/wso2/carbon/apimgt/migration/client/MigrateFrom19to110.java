@@ -115,6 +115,10 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
         //no implementation is required
     }
 
+    @Override
+    public void updateAPIPropertyVisibility() {
+    }
+
     private void synapseAPIMigration() {
         for (Tenant tenant : getTenantsArray()) {
             try {
