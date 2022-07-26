@@ -194,4 +194,8 @@ public class APIMStatMigrationClient extends MigrationClientBase implements Migr
     @Override
     public void updateAPIPropertyVisibility() {
     }
+
+    @Override
+    public void updateAPITypeInDB() throws APIMigrationException {
+    }
 }

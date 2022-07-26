@@ -179,6 +179,10 @@ public class MigrateFrom320 extends MigrationClientBase implements MigrationClie
     }
 
     @Override
+    public void updateAPITypeInDB() throws APIMigrationException {
+    }
+
+    @Override
     public void updateAPIPropertyVisibility() {
     }
 

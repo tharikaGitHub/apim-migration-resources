@@ -138,6 +138,8 @@ public class APIMMigrationService implements ServerStartupObserver {
                 migrateFrom310.updateAPIPropertyVisibility();
                 log.info("Successfully migrated the API Properties for visibility");
 
+                migrateFrom310.updateAPITypeInDB();
+
                 log.info("Starting Migration from API Manager 3.2 to 4.0");
                 log.info("Start moving UUIDs to DB from registry ..........");
                 commonMigrationClient.moveUUIDToDBFromRegistry();
@@ -208,6 +210,8 @@ public class APIMMigrationService implements ServerStartupObserver {
                 migrateFrom310.updateAPIPropertyVisibility();
                 log.info("Successfully migrated the API Properties for visibility from APIM " + migrateFromVersion);
 
+                migrateFrom310.updateAPITypeInDB();
+
                 log.info("Migrated Successfully to APIM 3.2.0 ");
 
                 log.info("Starting Migration from API Manager 3.2.0 to 4.0.0 .................");
@@ -267,6 +271,7 @@ public class APIMMigrationService implements ServerStartupObserver {
                 migrateFrom310.scopeMigration();
                 migrateFrom310.spMigration();
                 migrateFrom310.updateAPIPropertyVisibility();
+                migrateFrom310.updateAPITypeInDB();
                 log.info("Migrated Successfully to 3.2");
                 log.info("Starting Migration from API Manager 3.2 to 4.0");
 

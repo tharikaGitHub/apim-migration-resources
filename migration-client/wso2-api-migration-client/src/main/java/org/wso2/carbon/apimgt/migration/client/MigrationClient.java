@@ -123,4 +123,10 @@ public interface MigrationClient {
      *
      */
     void updateAPIPropertyVisibility() throws APIMigrationException;
+
+    /**
+     * This method is used to migrate properties to 3.2 with devportal visibility intact
+     *
+     */
+    void updateAPITypeInDB() throws APIMigrationException;
 }
