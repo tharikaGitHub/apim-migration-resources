@@ -442,9 +442,9 @@ public class ResourceUtil {
             transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
             transformer.transform(new DOMSource(document), new StreamResult(file));
         } catch (TransformerConfigurationException e) {
-            log.error("Transformer configuration error encountered while transforming file " + file.getName(), e);
+            log.error("WSO2 API-M Migration Task : Transformer configuration error encountered while transforming file " + file.getName(), e);
         } catch (TransformerException e) {
-            log.error("Transformer error encountered while transforming file " + file.getName(), e);
+            log.error("WSO2 API-M Migration Task : Transformer error encountered while transforming file " + file.getName(), e);
         }
     }
 
@@ -485,14 +485,14 @@ public class ResourceUtil {
             fos.write(contentInBytes);
             fos.flush();
         } catch (IOException e) {
-            log.error("Error occurred writing to " + fileName + ":", e);
+            log.error("WSO2 API-M Migration Task : Error occurred writing to " + fileName + ":", e);
         } finally {
             try {
                 if (fos != null) {
                     fos.close();
                 }
             } catch (IOException e) {
-                log.error("Error occurred closing file output stream", e);
+                log.error("WSO2 API-M Migration Task : Error occurred closing file output stream", e);
             }
         }
     }
@@ -546,7 +546,7 @@ public class ResourceUtil {
                         versionedAPIs.add(synapseConfig);
                     }
                 } catch (APIMigrationException e) {
-                    log.error("Error when passing file " + file.getName(), e);
+                    log.error("WSO2 API-M Migration Task : Error when passing file " + file.getName(), e);
                 }
             }
         }

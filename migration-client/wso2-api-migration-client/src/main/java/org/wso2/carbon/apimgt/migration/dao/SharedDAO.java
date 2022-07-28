@@ -75,7 +75,7 @@ public class SharedDAO {
                     userRoleFromPermissionDTO.setUserRoleDomainName(userRoleDomainName);
                     userRoleFromPermissionList.add(userRoleFromPermissionDTO);
 
-                    log.info("User role name: " + userRoleName + ", User domain name: " + userRoleDomainName
+                    log.info("WSO2 API-M Migration Task : User role name: " + userRoleName + ", User domain name: " + userRoleDomainName
                             + " retrieved for " + tenantId);
                 }
             } catch (SQLException e) {
@@ -119,8 +119,8 @@ public class SharedDAO {
                     userRoleFromPermissionDTO.setUserRoleDomainName(userRoleDomainName);
                     userRoleFromPermissionList.add(userRoleFromPermissionDTO);
 
-                    log.info("User role name: " + userRoleName + ", User domain name: " + userRoleDomainName
-                            + " retrieved for " + tenantId);
+                    log.info("WSO2 API-M Migration Task : User role name: " + userRoleName + ", User domain name: "
+                            + userRoleDomainName + " retrieved for " + tenantId);
                 }
             } catch (SQLException e) {
                 throw new APIMigrationException("Failed to get the result set.", e);

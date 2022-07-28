@@ -98,7 +98,7 @@ public class StatDBUtil {
             connection.commit();
 
         } catch (SQLException e) {
-            log.error("SQLException when updating API_RESPONSE_SUMMARY table", e);
+            log.error("WSO2 API-M Migration Task : SQLException when updating API_RESPONSE_SUMMARY table", e);
         }
         finally {
             try {
@@ -108,7 +108,7 @@ public class StatDBUtil {
                 if (connection != null) connection.close();
             }
             catch (SQLException e) {
-                log.error("SQLException when closing resource", e);
+                log.error("WSO2 API-M Migration Task : SQLException when closing resource", e);
             }
         }
     }
@@ -130,14 +130,14 @@ public class StatDBUtil {
             connection.commit();
 
         } catch (SQLException e) {
-            log.error("SQLException when executing: " + sql, e);
+            log.error("WSO2 API-M Migration Task : SQLException when executing: " + sql, e);
         }
         finally {
             try {
                 if (statement != null) { statement.close(); }
                 if (connection != null) { connection.close(); }
             } catch (SQLException e) {
-                log.error("SQLException when closing resource", e);
+                log.error("WSO2 API-M Migration Task : SQLException when closing resource", e);
             }
 
         }

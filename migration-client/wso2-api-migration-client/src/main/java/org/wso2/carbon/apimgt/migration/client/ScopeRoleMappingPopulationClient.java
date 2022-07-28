@@ -108,13 +108,13 @@ public class ScopeRoleMappingPopulationClient extends MigrationClientBase implem
 
     @Override
     public void populateScopeRoleMapping() throws APIMigrationException {
-        log.info("Population of Scope-Role Mapping started");
+        log.info("WSO2 API-M Migration Task : Population of Scope-Role Mapping started");
         populateRoleMappingWithUserRoles();
     }
 
     @Override
     public void updateScopeRoleMappings() throws APIMigrationException {
-        log.info("Started Updating Scope-Role Mappings");
+        log.info("WSO2 API-M Migration Task : Started Updating Scope-Role Mappings");
         for (Tenant tenant : getTenantsArray()) {
             try {
                 registryService.startTenantFlow(tenant);
@@ -145,7 +145,7 @@ public class ScopeRoleMappingPopulationClient extends MigrationClientBase implem
                             Set<String> roleSetFromFile = new HashSet<>(Arrays.asList(rolesStringFromFile.split("\\s*,\\s*")));
                             roleSetFromFile.removeAll(roleSetFromRegistry);
                             if (roleSetFromFile.size() > 0) {
-                                log.info("Role Mappings for scope " + scopeNameFromRegistry
+                                log.info("WSO2 API-M Migration Task : Role Mappings for scope " + scopeNameFromRegistry
                                         + " has beed updated with additional role(s) " + roleSetFromFile.toString());
                                 String roleStringToBeAdded = roleSetFromFile.toString().replace("[", "")
                                         .replace("]", "");
@@ -160,23 +160,25 @@ public class ScopeRoleMappingPopulationClient extends MigrationClientBase implem
                 ObjectMapper mapper = new ObjectMapper();
                 String formattedTenantConf = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(tenantConfFromRegistry);
                 APIUtil.updateTenantConf(formattedTenantConf, tenant.getDomain());
-                log.info("Updated old scope roles of tenant-conf.json for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')'
-                        + "\n" + formattedTenantConf);
+                log.info("WSO2 API-M Migration Task : Updated old scope roles of tenant-conf.json for tenant " +
+                        tenant.getId() + '(' + tenant.getDomain() + ')' + "\n" + formattedTenantConf);
 
                 //update tenant-conf with new scopes
                 if (tenant.getId() != MultitenantConstants.SUPER_TENANT_ID) {
                     APIUtil.loadAndSyncTenantConf(tenant.getId());
                 }
             } catch (APIManagementException e) {
-                log.error("Error while fetching tenant-conf of tenant " + tenant.getDomain() + " from registry.");
+                log.error("WSO2 API-M Migration Task : Error while fetching tenant-conf of tenant " +
+                        tenant.getDomain() + " from registry.");
             } catch (IOException e) {
-                log.error("Error while fetching tenant-conf of tenant " + tenant.getDomain() + " from file system.");
+                log.error("WSO2 API-M Migration Task : Error while fetching tenant-conf of tenant " +
+                        tenant.getDomain() + " from file system.");
             } finally {
                 registryService.endTenantFlow();
             }
 
         }
-        log.info("Finished Updating Scope-Role Mappings for all tenants.");
+        log.info("WSO2 API-M Migration Task : Finished Updating Scope-Role Mappings for all tenants.");
 
     }
 
@@ -201,7 +203,7 @@ public class ScopeRoleMappingPopulationClient extends MigrationClientBase implem
      * permissions assigned.
      */
     public void populateRoleMappingWithUserRoles() throws APIMigrationException {
-        log.info("Updating User Roles based on Permissions started.");
+        log.info("WSO2 API-M Migration Task : Updating User Roles based on Permissions started.");
 
         for (Tenant tenant : getTenantsArray()) {
             try {
@@ -210,7 +212,8 @@ public class ScopeRoleMappingPopulationClient extends MigrationClientBase implem
                     APIUtil.loadAndSyncTenantConf(tenant.getId());
                 }
 
-                log.info("Updating user roles for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
+                log.info("WSO2 API-M Migration Task : Updating user roles for tenant " + tenant.getId() +
+                        '(' + tenant.getDomain() + ')');
 
                 // Retrieve user roles which has create permission
                 List<UserRoleFromPermissionDTO> userRolesListWithCreatePermission = SharedDAO.getInstance()
@@ -255,19 +258,20 @@ public class ScopeRoleMappingPopulationClient extends MigrationClientBase implem
                 String formattedTenantConf = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(tenantConf);
 
                 APIUtil.updateTenantConf(formattedTenantConf, tenant.getDomain());
-                log.info("Updated tenant-conf.json for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')'
-                        + "\n" + formattedTenantConf);
+                log.info("WSO2 API-M Migration Task : Updated tenant-conf.json for tenant " + tenant.getId() + '('
+                        + tenant.getDomain() + ')' + "\n" + formattedTenantConf);
 
-                log.info("End updating user roles for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
+                log.info("WSO2 API-M Migration Task : End updating user roles for tenant " + tenant.getId() + '('
+                        + tenant.getDomain() + ')');
             } catch (APIManagementException e) {
-                log.error("Error while retrieving role names based on existing permissions. ", e);
+                log.error("WSO2 API-M Migration Task : Error while retrieving role names based on existing permissions. ", e);
             } catch (JsonProcessingException e) {
-                log.error("Error while formatting tenant-conf.json of tenant " + tenant.getId());
+                log.error("WSO2 API-M Migration Task : Error while formatting tenant-conf.json of tenant " + tenant.getId());
             } finally {
                 registryService.endTenantFlow();
             }
         }
-        log.info("Updating User Roles done for all the tenants.");
+        log.info("WSO2 API-M Migration Task : Updating User Roles done for all the tenants.");
     }
 
     /**
@@ -425,7 +429,7 @@ public class ScopeRoleMappingPopulationClient extends MigrationClientBase implem
                 throw new APIMigrationException("tenant-conf.json (in file system) content cannot be null");
             }
         } catch (ParseException e) {
-            log.error("Error while parsing tenant-conf.json from file system.");
+            log.error("WSO2 API-M Migration Task : Error while parsing tenant-conf.json from file system.");
         }
         return tenantConfJson;
     }

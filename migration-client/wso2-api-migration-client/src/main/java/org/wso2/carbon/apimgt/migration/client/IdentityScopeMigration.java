@@ -154,7 +154,7 @@ public class IdentityScopeMigration {
                 .toString();
         File configFile = new File(confXml);
         if (!configFile.exists()) {
-            log.warn("OAuth scope binding File is not present at: " + confXml);
+            log.info("WSO2 API-M Migration Task : OAuth scope binding File is not present at: " + confXml);
             return new ArrayList<>();
         }
 
@@ -175,9 +175,9 @@ public class IdentityScopeMigration {
                 scopes.add(scopeName);
             }
         } catch (XMLStreamException e) {
-            log.warn("Error while loading scope config.", e);
+            log.info("WSO2 API-M Migration Task : Error while loading scope config.", e);
         } catch (FileNotFoundException e) {
-            log.warn("Error while loading email config.", e);
+            log.info("WSO2 API-M Migration Task : Error while loading email config.", e);
         } finally {
             try {
                 if (parser != null) {
@@ -187,7 +187,7 @@ public class IdentityScopeMigration {
                     IdentityIOStreamUtils.closeInputStream(stream);
                 }
             } catch (XMLStreamException e) {
-                log.error("Error while closing XML stream", e);
+                log.error("WSO2 API-M Migration Task : Error while closing XML stream", e);
             }
         }
         return scopes;

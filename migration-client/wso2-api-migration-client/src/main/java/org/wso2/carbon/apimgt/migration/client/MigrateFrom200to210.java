@@ -107,7 +107,7 @@ public class MigrateFrom200to210 extends MigrationClientBase implements Migratio
            this method will read the new *json_fault.xml sequences from
            <APIM_2.1.0_HOME>/repository/resources/customsequences/fault and overwrite what is there in registry for
            all the tenants*/
-        log.info("Fault sequence migration from APIM 2.0.0 to 2.1.0 has started");
+        log.info("WSO2 API-M Migration Task : Fault sequence migration from APIM 2.0.0 to 2.1.0 has started");
         String apim210FaultSequencesLocation = CarbonUtils.getCarbonHome() + File.separator + "repository" + File
                 .separator + "resources" + File.separator + "customsequences" + File.separator + "fault";
         String apim210FaultSequenceFile = apim210FaultSequencesLocation + File.separator + "json_fault.xml";
@@ -118,20 +118,20 @@ public class MigrateFrom200to210 extends MigrationClientBase implements Migratio
         try {
             apim210FaultSequenceContent = FileUtil.readFileToString(apim210FaultSequenceFile);
         } catch (IOException e) {
-            log.error("Error in reading file: " + apim210FaultSequenceFile, e);
+            log.error("WSO2 API-M Migration Task : Error in reading file: " + apim210FaultSequenceFile, e);
         }
 
         String apim210DebugFaultSequenceContent = null;
         try {
             apim210DebugFaultSequenceContent = FileUtil.readFileToString(api210DebugFaultSequenceFile);
         } catch (IOException e) {
-            log.error("Error in reading file: " + api210DebugFaultSequenceFile, e);
+            log.error("WSO2 API-M Migration Task : Error in reading file: " + api210DebugFaultSequenceFile, e);
         }
 
         if (isEmpty(apim210FaultSequenceContent) && isEmpty(apim210DebugFaultSequenceContent)) {
             // nothing has been read from <APIM_2.1.0_HOME>/repository/resources/customsequences/fault
-            log.error("No content read from <APIM_2.1.0_HOME>/repository/resources/customsequences/fault location, "
-                    + "aborting migration");
+            log.error("WSO2 API-M Migration Task : No content read from <APIM_2.1.0_HOME>/repository/resources/"
+                    + "customsequences/fault location, " + "aborting migration");
             return;
         }
         for (Tenant tenant : getTenantsArray()) {
@@ -150,15 +150,15 @@ public class MigrateFrom200to210 extends MigrationClientBase implements Migratio
                             registryService.addGovernanceRegistryResource(jsonFaultResourceRegistryLocation,
                                     apim210FaultSequenceContent, "application/xml");
                         }
-                        log.info("Successfully migrated json_fault.xml in registry for tenant: " + tenant.getDomain() +
-                                ", tenant id: " + tenant.getId());
+                        log.info("WSO2 API-M Migration Task : Successfully migrated json_fault.xml in registry for "
+                                + "tenant: " + tenant.getDomain() + ", tenant id: " + tenant.getId());
 
                     } catch (UserStoreException e) {
-                        log.error("Error in updating json_fault.xml in registry for tenant: " + tenant.getDomain() +
-                                ", tenant id: " + tenant.getId(), e);
+                        log.error("WSO2 API-M Migration Task : Error in updating json_fault.xml in registry for "
+                                + "tenant: " + tenant.getDomain() + ", tenant id: " + tenant.getId(), e);
                     } catch (RegistryException e) {
-                        log.error("Error in updating json_fault.xml in registry for tenant: " + tenant.getDomain() +
-                                ", tenant id: " + tenant.getId(), e);
+                        log.error("WSO2 API-M Migration Task : Error in updating json_fault.xml in registry for "
+                                + "tenant: " + tenant.getDomain() + ", tenant id: " + tenant.getId(), e);
                     }
                 }
                 if (!isEmpty(apim210DebugFaultSequenceContent)) {
@@ -173,14 +173,14 @@ public class MigrateFrom200to210 extends MigrationClientBase implements Migratio
                             registryService.addGovernanceRegistryResource(debugJsonFaultResourceRegistryLocation,
                                     apim210DebugFaultSequenceContent, "application/xml");
                         }
-                        log.info("Successfully migrated debug_json_fault.xml in registry for tenant: " +
-                                tenant.getDomain() + ", tenant id: " + tenant.getId());
+                        log.info("WSO2 API-M Migration Task : Successfully migrated debug_json_fault.xml in registry"
+                                + " for tenant: " + tenant.getDomain() + ", tenant id: " + tenant.getId());
                     } catch (UserStoreException e) {
-                        log.error("Error in updating debug_json_fault.xml in registry for tenant: " +
-                                tenant.getDomain() + ", tenant id: " + tenant.getId(), e);
+                        log.error("WSO2 API-M Migration Task : Error in updating debug_json_fault.xml in registry "
+                                + "for tenant: " + tenant.getDomain() + ", tenant id: " + tenant.getId(), e);
                     } catch (RegistryException e) {
-                        log.error("Error in updating debug_json_fault.xml in registry for tenant: " +
-                                tenant.getDomain() + ", tenant id: " + tenant.getId(), e);
+                        log.error("WSO2 API-M Migration Task : Error in updating debug_json_fault.xml in registry "
+                                + "for tenant: " + tenant.getDomain() + ", tenant id: " + tenant.getId(), e);
                     }
                 }
             } finally {

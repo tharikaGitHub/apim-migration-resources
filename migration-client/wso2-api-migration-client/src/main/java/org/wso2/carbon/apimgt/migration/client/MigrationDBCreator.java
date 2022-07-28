@@ -134,7 +134,7 @@ public class MigrationDBCreator extends DatabaseCreator {
                 executeSQL(sql.toString());
             }
         } catch (IOException e) {
-            log.error("Error occurred while executing SQL script for creating registry database", e);
+            log.error("WSO2 API-M Migration Task : Error occurred while executing SQL script for creating registry database", e);
             throw new APIMigrationException("Error occurred while executing SQL script for creating registry database", e);
 
         } finally {
@@ -187,7 +187,7 @@ public class MigrationDBCreator extends DatabaseCreator {
             if ("X0Y32".equals(e.getSQLState()) || "42710".equals(e.getSQLState())) {
                 // eliminating the table already exception for the derby and DB2 database types
                 if (log.isDebugEnabled()) {
-                    log.info("Table Already Exists. Hence, skipping table creation");
+                    log.info("WSO2 API-M Migration Task : Table Already Exists. Hence, skipping table creation");
                 }
             } else {
                 throw new APIMigrationException("Error occurred while executing : " + sql, e);
@@ -197,7 +197,7 @@ public class MigrationDBCreator extends DatabaseCreator {
                 try {
                     resultSet.close();
                 } catch (SQLException e) {
-                    log.error("Error occurred while closing result set.", e);
+                    log.error("WSO2 API-M Migration Task : Error occurred while closing result set.", e);
                 }
             }
         }
