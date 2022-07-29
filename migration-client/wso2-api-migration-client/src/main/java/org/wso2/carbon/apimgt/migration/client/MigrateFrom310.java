@@ -22,8 +22,12 @@ import io.swagger.models.apideclaration.Api;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.simple.parser.ParseException;
+import org.wso2.carbon.apimgt.api.APIManagementException;
+import org.wso2.carbon.apimgt.impl.APIConstants;
 import org.wso2.carbon.apimgt.impl.internal.ServiceReferenceHolder;
+import org.wso2.carbon.apimgt.impl.utils.APIUtil;
 import org.wso2.carbon.apimgt.migration.APIMigrationException;
+import org.wso2.carbon.apimgt.migration.client.internal.ServiceHolder;
 import org.wso2.carbon.apimgt.migration.client.sp_migration.APIMStatMigrationException;
 import org.wso2.carbon.apimgt.migration.dao.APIMgtDAO;
 import org.wso2.carbon.apimgt.migration.dto.ResourceScopeInfoDTO;
@@ -35,8 +39,11 @@ import org.wso2.carbon.apimgt.migration.dto.APIInfoScopeMappingDTO;
 import org.wso2.carbon.apimgt.migration.dto.APIScopeMappingDTO;
 import org.wso2.carbon.apimgt.migration.dto.AMAPIResourceScopeMappingDTO;
 import org.wso2.carbon.apimgt.migration.util.RegistryService;
+import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.governance.api.exception.GovernanceException;
+import org.wso2.carbon.governance.api.generic.GenericArtifactManager;
 import org.wso2.carbon.governance.api.generic.dataobjects.GenericArtifact;
+import org.wso2.carbon.governance.api.generic.dataobjects.GenericArtifactImpl;
 import org.wso2.carbon.registry.core.Registry;
 import org.wso2.carbon.registry.core.exceptions.RegistryException;
 import org.wso2.carbon.user.api.Tenant;
@@ -273,5 +280,61 @@ public class MigrateFrom310 extends MigrationClientBase implements MigrationClie
                 registryService.endTenantFlow();
             }
         }
+    }
+
+    /**
+     * Update the API_TYPE in the database
+     *
+     * @throws APIMigrationException APIMigrationException
+     */
+    public void updateAPITypeInDB() throws APIMigrationException {
+        TenantManager tenantManager = ServiceHolder.getRealmService().getTenantManager();
+
+        try {
+            List<Tenant> tenants = APIUtil.getAllTenantsWithSuperTenant();
+            for (Tenant tenant : tenants) {
+                List<APIInfoDTO> apiInfoDTOList = new ArrayList<>();
+                try {
+                    int apiTenantId = tenantManager.getTenantId(tenant.getDomain());
+                    APIUtil.loadTenantRegistry(apiTenantId);
+                    startTenantFlow(tenant.getDomain());
+                    Registry registry =
+                            ServiceHolder.getRegistryService().getGovernanceSystemRegistry(apiTenantId);
+                    GenericArtifactManager tenantArtifactManager = APIUtil.getArtifactManager(registry,
+                            APIConstants.API_KEY);
+                    if (tenantArtifactManager != null) {
+                        GenericArtifact[] tenantArtifacts = tenantArtifactManager.getAllGenericArtifacts();
+                        for (GenericArtifact artifact : tenantArtifacts) {
+                            String artifactPath = ((GenericArtifactImpl) artifact).getArtifactPath();
+                            if (artifactPath.contains("/apimgt/applicationdata/apis/")) {
+                                continue;
+                            }
+                            APIInfoDTO apiInfoDTO = new APIInfoDTO();
+                            apiInfoDTO.setApiProvider(
+                                    APIUtil.replaceEmailDomainBack(artifact.getAttribute("overview_provider")));
+                            apiInfoDTO.setApiName(artifact.getAttribute("overview_name"));
+                            apiInfoDTO.setApiVersion(artifact.getAttribute("overview_version"));
+                            apiInfoDTO.setType(artifact.getAttribute("overview_type"));
+                            apiInfoDTOList.add(apiInfoDTO);
+                        }
+                        APIMgtDAO apiMgtDAO = APIMgtDAO.getInstance();
+                        apiMgtDAO.updateAPIType(apiInfoDTOList, tenant.getId(), tenant.getDomain());
+                    }
+                } finally {
+                    PrivilegedCarbonContext.endTenantFlow();
+                }
+            }
+        } catch (RegistryException e) {
+            throw new APIMigrationException("Error while initializing the registry", e);
+        } catch (UserStoreException e) {
+            throw new APIMigrationException("Error while retrieving the tenants", e);
+        } catch (APIManagementException e) {
+            throw new APIMigrationException("Error while Retrieving API artifact from the registry", e);
+        }
+    }
+
+    private static void startTenantFlow(String tenantDomain) {
+        PrivilegedCarbonContext.startTenantFlow();
+        PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantDomain(tenantDomain, true);
     }
 }

@@ -100,4 +100,8 @@ public class MigrateFrom210 extends MigrationClientBase implements MigrationClie
     @Override
     public void updateAPIPropertyVisibility() {
     }
+
+    @Override
+    public void updateAPITypeInDB() throws APIMigrationException {
+    }
 }

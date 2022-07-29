@@ -1179,4 +1179,40 @@ public class APIMgtDAO {
                     "Error while retrieving key manager configuration for " + name + " in tenant " + tenantDomain, e);
         }
     }
+
+    /**
+     * This method is used to update the API_TYPE in AM_API in the DB using API details
+     *
+     * @param apiInfoDTOList API Information list
+     * @param tenantId       tenant ID
+     * @param tenantDomain   tenant domain
+     * @throws APIMigrationException Migration Exception
+     */
+    public void updateAPIType(List<APIInfoDTO> apiInfoDTOList, int tenantId, String tenantDomain) throws APIMigrationException {
+        try (Connection connection = APIMgtDBUtil.getConnection()) {
+            connection.setAutoCommit(false);
+            String query = "UPDATE AM_API SET API_TYPE = ? "
+                    + "WHERE API_PROVIDER = ? AND API_NAME = ? AND API_VERSION = ?";
+            try (PreparedStatement statement = connection.prepareStatement(query)) {
+                for (APIInfoDTO apiInfoDTO : apiInfoDTOList) {
+                    statement.setString(1, apiInfoDTO.getType());
+                    statement.setString(2, apiInfoDTO.getApiProvider());
+                    statement.setString(3, apiInfoDTO.getApiName());
+                    statement.setString(4, apiInfoDTO.getApiVersion());
+                    statement.addBatch();
+                }
+                statement.executeBatch();
+                connection.commit();
+                log.info("Successfully updated API_TYPE for APIs in tenant:" + tenantId + '(' + tenantDomain + ')');
+            } catch (SQLException e) {
+                connection.rollback();
+                throw new APIMigrationException("SQLException while updating API_TYPE for APIs in tenant:"
+                        + tenantId + '(' + tenantDomain + ')', e);
+            }
+        } catch (SQLException e) {
+            throw new APIMigrationException("SQLException while updating API_TYPE for APIs in tenant:"
+                    + tenantId + '(' + tenantDomain + ')', e);
+        }
+
+    }
 }

@@ -1517,4 +1517,8 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
     @Override
     public void updateAPIPropertyVisibility() {
     }
+
+    @Override
+    public void updateAPITypeInDB() throws APIMigrationException {
+    }
 }
