@@ -108,13 +108,13 @@ public class ScopeRoleMappingPopulationClient extends MigrationClientBase implem
 
     @Override
     public void populateScopeRoleMapping() throws APIMigrationException {
-        log.info("WSO2 API-M Migration Task : Population of Scope-Role Mapping started");
+        log.info("WSO2 API-M Migration Task : Started populating Scope-Role mappings");
         populateRoleMappingWithUserRoles();
     }
 
     @Override
     public void updateScopeRoleMappings() throws APIMigrationException {
-        log.info("WSO2 API-M Migration Task : Started Updating Scope-Role Mappings");
+        log.info("WSO2 API-M Migration Task : Started updating Scope-Role Mappings");
         for (Tenant tenant : getTenantsArray()) {
             try {
                 registryService.startTenantFlow(tenant);
@@ -146,7 +146,7 @@ public class ScopeRoleMappingPopulationClient extends MigrationClientBase implem
                             roleSetFromFile.removeAll(roleSetFromRegistry);
                             if (roleSetFromFile.size() > 0) {
                                 log.info("WSO2 API-M Migration Task : Role Mappings for scope " + scopeNameFromRegistry
-                                        + " has beed updated with additional role(s) " + roleSetFromFile.toString());
+                                        + " has been updated with additional role(s) " + roleSetFromFile.toString());
                                 String roleStringToBeAdded = roleSetFromFile.toString().replace("[", "")
                                         .replace("]", "");
                                 scopeFromRegistry
@@ -179,7 +179,6 @@ public class ScopeRoleMappingPopulationClient extends MigrationClientBase implem
 
         }
         log.info("WSO2 API-M Migration Task : Finished Updating Scope-Role Mappings for all tenants.");
-
     }
 
     @Override
@@ -203,7 +202,7 @@ public class ScopeRoleMappingPopulationClient extends MigrationClientBase implem
      * permissions assigned.
      */
     public void populateRoleMappingWithUserRoles() throws APIMigrationException {
-        log.info("WSO2 API-M Migration Task : Updating User Roles based on Permissions started.");
+        log.info("WSO2 API-M Migration Task : Updating role mappings for user roles based on permissions");
 
         for (Tenant tenant : getTenantsArray()) {
             try {
@@ -271,7 +270,7 @@ public class ScopeRoleMappingPopulationClient extends MigrationClientBase implem
                 registryService.endTenantFlow();
             }
         }
-        log.info("WSO2 API-M Migration Task : Updating User Roles done for all the tenants.");
+        log.info("WSO2 API-M Migration Task : Finished updating role mappings for user roles of all the tenants");
     }
 
     /**

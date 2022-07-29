@@ -61,7 +61,7 @@ public class APIMMigrationService implements ServerStartupObserver {
         }
 
         String migrateFromVersion = System.getProperty(Constants.ARG_MIGRATE_FROM_VERSION);
-        log.info("WSO2 API-M Migration Task : Starting API Manager Migration from API-M" + migrateFromVersion +" to 4.0.0");
+        log.info("WSO2 API-M Migration Task : Starting API Manager Migration from API-M " + migrateFromVersion +" to 4.0.0");
 
         String options = System.getProperty(Constants.ARG_OPTIONS);
         String specificVersion = System.getProperty(Constants.ARG_RUN_SPECIFIC_VERSION);
@@ -109,15 +109,18 @@ public class APIMMigrationService implements ServerStartupObserver {
                 }
                 //Check AccessControl-Migration enabled
             } else if (V200.equals(migrateFromVersion)) {
-                MigrationClient migrateFrom200 = new MigrateFrom200(tenants, blackListTenants, tenantRange, registryService, tenantManager);
-                log.info("WSO2 API-M Migration Task : Start Migrating WSO2 API Manager" + migrateFromVersion +" registry resources");
+                MigrationClient migrateFrom200 = new MigrateFrom200(tenants, blackListTenants, tenantRange,
+                        registryService, tenantManager);
+                log.info("WSO2 API-M Migration Task : Start Migrating WSO2 API Manager" + migrateFromVersion +" "
+                        + "registry resources");
                 migrateFrom200.registryResourceMigration();
-                log.info("WSO2 API-M Migration Task : Successfully migrated WSO2 API Manager" + migrateFromVersion +" registry resources.");
+                log.info("WSO2 API-M Migration Task : Successfully migrated WSO2 API Manager" + migrateFromVersion +
+                        " registry resources.");
 
-
-                MigrationClient scopeRoleMappingPopulation = new ScopeRoleMappingPopulationClient(tenants, blackListTenants, tenantRange, registryService, tenantManager);
-
-                log.info("WSO2 API-M Migration Task : Populating WSO2 API Manager Scope-Role Mapping from API-M" + migrateFromVersion);
+                MigrationClient scopeRoleMappingPopulation = new ScopeRoleMappingPopulationClient(tenants,
+                        blackListTenants, tenantRange, registryService, tenantManager);
+                log.info("WSO2 API-M Migration Task : Populating WSO2 API Manager Scope-Role Mapping from API-M" +
+                        migrateFromVersion);
                 scopeRoleMappingPopulation.updateScopeRoleMappings();
                 log.info("WSO2 API-M Migration Task : Successfully updated the Scope Role Mappings");
                 scopeRoleMappingPopulation.populateScopeRoleMapping();
@@ -137,7 +140,9 @@ public class APIMMigrationService implements ServerStartupObserver {
                 migrateFrom310.updateAPIPropertyVisibility();
                 log.info("WSO2 API-M Migration Task : Successfully migrated the API Properties for visibility");
 
+                log.info("WSO2 API-M Migration Task : Start updating API_TYPE in AM_DB");
                 migrateFrom310.updateAPITypeInDB();
+                log.info("WSO2 API-M Migration Task : Successfully updated API_TYPE in AM_DB");
 
                 log.info("WSO2 API-M Migration Task : Starting Migration from API Manager 3.2 to 4.0");
                 log.info("WSO2 API-M Migration Task : Start moving UUIDs to DB from registry");
@@ -147,6 +152,7 @@ public class APIMMigrationService implements ServerStartupObserver {
                 log.info("WSO2 API-M Migration Task : Start identity scope migration");
                 identityScopeMigration.migrateScopes();
                 log.info("WSO2 API-M Migration Task : Successfully migrated the identity scopes.");
+
                 MigrateFrom320 migrateFrom320 = new MigrateFrom320(tenants, blackListTenants,
                         tenantRange, registryService, tenantManager);
                 log.info("WSO2 API-M Migration Task : Start migrating WebSocket APIs");
@@ -157,39 +163,42 @@ public class APIMMigrationService implements ServerStartupObserver {
                 migrateFrom320.migrateProductMappingTable();
                 log.info("WSO2 API-M Migration Task : Successfully migrated API Product Mappings");
 
-                log.info("WSO2 API-M Migration Task : Start migrating registry paths of Icon and WSDLs");
+                log.info("WSO2 API-M Migration Task : Start migrating registry paths of Icons and WSDLs");
                 migrateFrom320.updateRegistryPathsOfIconAndWSDL();
-                log.info("WSO2 API-M Migration Task : Successfully migrated API registry paths of Icon and WSDLs.");
+                log.info("WSO2 API-M Migration Task : Successfully migrated API registry paths of Icons and WSDLs.");
 
                 log.info("WSO2 API-M Migration Task : Start removing unnecessary fault handlers from fault sequences");
                 migrateFrom320.removeUnnecessaryFaultHandlers();
-                log.info("WSO2 API-M Migration Task : Successfully removed the unnecessary fault handlers from fault sequences.");
+                log.info("WSO2 API-M Migration Task : Successfully removed the unnecessary fault handlers from fault"
+                        + " sequences");
 
                 log.info("WSO2 API-M Migration Task : Start API Revision related migration");
                 migrateFrom320.apiRevisionRelatedMigration();
-                log.info("WSO2 API-M Migration Task : API Revision related migration is successful.");
+                log.info("WSO2 API-M Migration Task : Successfully completed API Revision related migration");
 
                 log.info("WSO2 API-M Migration Task : Start migrating Endpoint Certificates");
                 migrateFrom320.migrateEndpointCertificates();
-                log.info("WSO2 API-M Migration Task : Successfully migrated Endpoint Certificates.");
+                log.info("WSO2 API-M Migration Task : Successfully migrated Endpoint Certificates");
 
                 log.info("WSO2 API-M Migration Task : Start replacing KM name by UUID");
                 migrateFrom320.replaceKMNamebyUUID();
                 log.info("WSO2 API-M Migration Task : Successfully replaced KM name by UUID.");
 
-                log.info("WSO2 API-M Migration Task : Migrated Successfully to API-M 4.0.0");
-
+                log.info("WSO2 API-M Migration Task : Successfully migrated to API-M 4.0.0");
             } else if (V210.equals(migrateFromVersion) || V220.equals(migrateFromVersion) ||
                     V250.equals(migrateFromVersion) || V260.equals(migrateFromVersion)) {
-                log.info("WSO2 API-M Migration Task : Start migration from API-M" + migrateFromVersion +"");
+                log.info("WSO2 API-M Migration Task : Start migration from API-M " + migrateFromVersion);
 
-                MigrationClient migrateFrom210 = new MigrateFrom210(tenants, blackListTenants, tenantRange, registryService, tenantManager);
+                MigrationClient migrateFrom210 = new MigrateFrom210(tenants, blackListTenants, tenantRange,
+                        registryService, tenantManager);
                 log.info("WSO2 API-M Migration Task : Migrating WSO2 API Manager registry resources");
                 migrateFrom210.registryResourceMigration();
-                log.info("WSO2 API-M Migration Task : Successfully migrated registry resources .");
+                log.info("WSO2 API-M Migration Task : Successfully migrated registry resources");
 
-                MigrationClient scopeRoleMappingPopulation = new ScopeRoleMappingPopulationClient(tenants, blackListTenants, tenantRange, registryService, tenantManager);
-                log.info("WSO2 API-M Migration Task : Populating WSO2 API Manager Scope-Role Mapping to migrate from API-M" + migrateFromVersion);
+                MigrationClient scopeRoleMappingPopulation = new ScopeRoleMappingPopulationClient(tenants,
+                        blackListTenants, tenantRange, registryService, tenantManager);
+                log.info("WSO2 API-M Migration Task : Populating WSO2 API Manager Scope-Role Mapping to migrate "
+                        + "from API-M " + migrateFromVersion);
                 scopeRoleMappingPopulation.updateScopeRoleMappings();
                 log.info("WSO2 API-M Migration Task : Successfully updated the Scope Role Mappings");
                 scopeRoleMappingPopulation.populateScopeRoleMapping();
@@ -200,20 +209,26 @@ public class APIMMigrationService implements ServerStartupObserver {
 
                 MigrationClient migrateFrom310 = new MigrateFrom310(tenants, blackListTenants,
                         tenantRange, registryService, tenantManager);
+                log.info("WSO2 API-M Migration Task : Start scope migration from API-M 3.1.0");
                 migrateFrom310.scopeMigration();
-                log.info("WSO2 API-M Migration Task : Successfully migrated the Scopes from API-M" + migrateFromVersion);
+                log.info("WSO2 API-M Migration Task : Successfully migrated the Scopes from API-M " + migrateFromVersion);
 
+                log.info("WSO2 API-M Migration Task : Start SP migration from API-M 3.1.0");
                 migrateFrom310.spMigration();
-                log.info("WSO2 API-M Migration Task : Successfully migrated the SPs from API-M" + migrateFromVersion);
+                log.info("WSO2 API-M Migration Task : Successfully migrated the SPs from API-M " + migrateFromVersion);
 
+                log.info("WSO2 API-M Migration Task : Start updating API Property visibility");
                 migrateFrom310.updateAPIPropertyVisibility();
-                log.info("WSO2 API-M Migration Task : Successfully migrated the API Properties for visibility fromAPI-M" + migrateFromVersion);
+                log.info("WSO2 API-M Migration Task : Successfully migrated the API Properties for visibility from "
+                        + "API-M " + migrateFromVersion);
 
+                log.info("WSO2 API-M Migration Task : Start updating API_TYPE in AM_DB");
                 migrateFrom310.updateAPITypeInDB();
+                log.info("WSO2 API-M Migration Task : Successfully updated API_TYPE in AM_DB");
 
                 log.info("WSO2 API-M Migration Task : Migrated Successfully to API-M 3.2.0");
-
                 log.info("WSO2 API-M Migration Task : Starting Migration from API Manager 3.2.0 to 4.0.0");
+
                 log.info("WSO2 API-M Migration Task : Start moving UUIDs to DB from registry");
                 commonMigrationClient.moveUUIDToDBFromRegistry();
                 log.info("WSO2 API-M Migration Task : Successfully moved the UUIDs to DB from registry");
@@ -258,7 +273,7 @@ public class APIMMigrationService implements ServerStartupObserver {
                 migrateFrom320.replaceKMNamebyUUID();
                 log.info("WSO2 API-M Migration Task : Successfully replaced KM name by UUID.");
 
-                log.info("WSO2 API-M Migration Task : Migrated Successfully to 4.0.0");
+                log.info("WSO2 API-M Migration Task : Successfully migrated to 4.0.0");
             } else if (isScopeRoleMappingPopulation) {
                 MigrationClient scopeRoleMappingPopulation = new ScopeRoleMappingPopulationClient(tenants, blackListTenants, tenantRange, registryService, tenantManager);
                 log.info("WSO2 API-M Migration Task : Populating WSO2 API Manager Scope-Role Mapping");
@@ -266,11 +281,27 @@ public class APIMMigrationService implements ServerStartupObserver {
             } else if(V310.equals(migrateFromVersion) || V300.equals(migrateFromVersion)) {
                 MigrationClient migrateFrom310 = new MigrateFrom310(tenants, blackListTenants,
                         tenantRange, registryService, tenantManager);
+                log.info("WSO2 API-M Migration Task : Migrating WSO2 API Manager registry resources");
                 migrateFrom310.registryResourceMigration();
+                log.info("WSO2 API-M Migration Task : Successfully migrated registry resources");
+
+                log.info("WSO2 API-M Migration Task : Start scope migration from API-M 3.1.0");
                 migrateFrom310.scopeMigration();
+                log.info("WSO2 API-M Migration Task : Successfully migrated the Scopes from API-M " + migrateFromVersion);
+
+                log.info("WSO2 API-M Migration Task : Start SP migration from API-M 3.1.0");
                 migrateFrom310.spMigration();
+                log.info("WSO2 API-M Migration Task : Successfully migrated the SPs from API-M " + migrateFromVersion);
+
+                log.info("WSO2 API-M Migration Task : Start updating API Property visibility");
                 migrateFrom310.updateAPIPropertyVisibility();
+                log.info("WSO2 API-M Migration Task : Successfully migrated the API Properties for visibility from "
+                        + "API-M " + migrateFromVersion);
+
+                log.info("WSO2 API-M Migration Task : Start updating API_TYPE in AM_DB");
                 migrateFrom310.updateAPITypeInDB();
+                log.info("WSO2 API-M Migration Task : Successfully updated API_TYPE in AM_DB");
+
                 log.info("WSO2 API-M Migration Task : Migrated Successfully to 3.2");
                 log.info("WSO2 API-M Migration Task : Starting Migration from API Manager 3.2 to 4.0");
 
@@ -313,7 +344,7 @@ public class APIMMigrationService implements ServerStartupObserver {
                 migrateFrom320.replaceKMNamebyUUID();
                 log.info("WSO2 API-M Migration Task : Successfully replaced KM name by UUID.");
 
-                log.info("WSO2 API-M Migration Task : Migrated Successfully to 4.0.0");
+                log.info("WSO2 API-M Migration Task : Successfully migrated to 4.0.0");
             } else if (V320.equals(migrateFromVersion)) {
                 commonMigrationClient.moveUUIDToDBFromRegistry();
                 MigrateFrom320 migrateFrom320 = new MigrateFrom320(tenants, blackListTenants,
@@ -348,7 +379,7 @@ public class APIMMigrationService implements ServerStartupObserver {
                 migrateFrom320.replaceKMNamebyUUID();
                 log.info("WSO2 API-M Migration Task : Successfully replaced KM name by UUID.");
 
-                log.info("WSO2 API-M Migration Task : Migrated Successfully to 4.0.0");
+                log.info("WSO2 API-M Migration Task : Successfully migrated to 4.0.0");
 
             } else {
                 MigrationClientFactory.initFactory(tenants, blackListTenants, tenantRange, registryService, tenantManager,

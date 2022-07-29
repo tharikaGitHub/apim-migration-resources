@@ -399,10 +399,12 @@ public abstract class MigrationClientBase {
      * @throws APIMigrationException
      */
     public void updateGenericAPIArtifacts(RegistryService registryService) throws APIMigrationException {
+        log.info("WSO2 API-M Migration Task : Start updating registry API artifacts");
         for (Tenant tenant : getTenantsArray()) {
             try {
                 registryService.startTenantFlow(tenant);
-                log.debug("Updating APIs for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
+                log.info("WSO2 API-M Migration Task : Updating API artifacts for tenant " + tenant.getId() +
+                        '(' + tenant.getDomain() + ')');
                 GenericArtifact[] artifacts = registryService.getGenericAPIArtifacts();
                 for (GenericArtifact artifact : artifacts) {
                     String path = artifact.getPath();
@@ -416,7 +418,7 @@ public abstract class MigrationClientBase {
                         registryService.updateEnableStoreInRxt(path,artifact);
                     }
                 }
-                log.info("WSO2 API-M Migration Task : Completed Updating API artifacts tenant ---- " + tenant.getId()
+                log.info("WSO2 API-M Migration Task : Completed Updating API artifacts for tenant" + tenant.getId()
                         + '(' + tenant.getDomain() + ')');
             } catch (GovernanceException e) {
                 log.error("WSO2 API-M Migration Task : Error while accessing API artifact in registry for tenant "
@@ -427,6 +429,7 @@ public abstract class MigrationClientBase {
             } finally {
                 registryService.endTenantFlow();
             }
+            log.info("WSO2 API-M Migration Task : RXT resource migration done for all the tenants");
         }
     }
 
@@ -436,7 +439,7 @@ public abstract class MigrationClientBase {
            this method will read the new *json_fault.xml sequences from
            <APIM_2.1.0_HOME>/repository/resources/customsequences/fault and overwrite what is there in registry for
            all the tenants*/
-        log.info("WSO2 API-M Migration Task : Fault sequence migration from APIM 2.0.0 to 2.1.0 has started");
+        log.info("WSO2 API-M Migration Task : Fault sequence migration from API-M 2.0.0 to 2.1.0 has started");
         String apim210FaultSequencesLocation = CarbonUtils.getCarbonHome() + File.separator + "repository" + File
                 .separator + "resources" + File.separator + "customsequences" + File.separator + "fault";
         String apim210FaultSequenceFile = apim210FaultSequencesLocation + File.separator + "json_fault.xml";
@@ -447,20 +450,20 @@ public abstract class MigrationClientBase {
         try {
             apim210FaultSequenceContent = FileUtil.readFileToString(apim210FaultSequenceFile);
         } catch (IOException e) {
-            log.error("Error in reading file: " + apim210FaultSequenceFile, e);
+            log.error("WSO2 API-M Migration Task : Error in reading file: " + apim210FaultSequenceFile, e);
         }
 
         String apim210DebugFaultSequenceContent = null;
         try {
             apim210DebugFaultSequenceContent = FileUtil.readFileToString(api210DebugFaultSequenceFile);
         } catch (IOException e) {
-            log.error("Error in reading file: " + api210DebugFaultSequenceFile, e);
+            log.error("WSO2 API-M Migration Task : Error in reading file: " + api210DebugFaultSequenceFile, e);
         }
 
         if (StringUtils.isEmpty(apim210FaultSequenceContent) && StringUtils.isEmpty(apim210DebugFaultSequenceContent)) {
             // nothing has been read from <APIM_NEW_HOME>/repository/resources/customsequences/fault
-            log.error("No content read from <APIM_NEW_HOME>/repository/resources/customsequences/fault location, "
-                    + "aborting migration");
+            log.error("WSO2 API-M Migration Task : No content read from <APIM_NEW_HOME>/repository/resources/"
+                    + "customsequences/fault location, aborting migration");
             return;
         }
         for (Tenant tenant : getTenantsArray()) {
@@ -516,6 +519,7 @@ public abstract class MigrationClientBase {
                 registryService.endTenantFlow();
             }
         }
+        log.info("WSO2 API-M Migration Task : RXT resource migration done for all the tenants");
     }
 
     /**
@@ -524,7 +528,7 @@ public abstract class MigrationClientBase {
      * @throws APIMigrationException
      */
     public void rxtMigration(RegistryService registryService) throws APIMigrationException {
-        log.info("WSO2 API-M Migration Task : Rxt migration for API Manager started.");
+        log.info("WSO2 API-M Migration Task : Starting RXT migration for API Manager 4.0.0");
 
         String rxtName = "api.rxt";
         String rxtDir = CarbonUtils.getCarbonHome() + File.separator + "migration-resources" + File.separator + "rxts"
@@ -555,6 +559,6 @@ public abstract class MigrationClientBase {
                 registryService.endTenantFlow();
             }
         }
-        log.info("WSO2 API-M Migration Task : Rxt resource migration done for all the tenants");
+        log.info("WSO2 API-M Migration Task : Completed fault sequence migration for all the tenants");
     }
 }

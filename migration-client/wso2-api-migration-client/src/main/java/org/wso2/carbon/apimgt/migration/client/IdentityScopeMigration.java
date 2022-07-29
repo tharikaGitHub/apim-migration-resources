@@ -49,6 +49,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLInputFactory;
@@ -76,6 +77,7 @@ public class IdentityScopeMigration {
         Map<Integer, Map<String, Scope>> scopesMap = new HashMap<>();
         boolean scopesMigrated = isScopesMigrated();
         if (!scopesMigrated) {
+            log.info("WSO2 API-M Migration Task : Starting identity scope migration");
             String query = SELECT_SCOPES_QUERY_LEFT;
             List<String> identityScopes = retrieveIdentityScopes();
             query = query.replaceAll("SCOPE_SKIP_LIST", StringUtils.repeat("?", ",", identityScopes.size()));
@@ -121,11 +123,19 @@ public class IdentityScopeMigration {
                     if (scopeMap != null) {
                         Set<Scope> scopeSet = new HashSet<>(scopeMap.values());
                         scopesDAO.addScopes(scopeSet, scopesMapEntry.getKey());
+                        String scopeStr = scopeSet.stream().map(scope -> scope.getKey())
+                                .collect(Collectors.joining(", "));
+                        log.info("WSO2 API-M Migration Task : Successfully migrated scopes ("
+                                + scopeStr + ") of tenant: "+ scopesMapEntry.getKey() +" from IDN_OAUTH2_SCOPE table "
+                                + "to AM_SCOPE table");
                     }
                 }
             } catch (SQLException e) {
-                throw new APIManagementException("Error while retrieving database connection", e);
+                throw new APIManagementException("WSO2 API-M Migration Task : Error while retrieving database "
+                        + "connection", e);
             }
+        } else {
+            log.info("WSO2 API-M Migration Task : Scopes are already migrated, hence skipping this step");
         }
     }
 
