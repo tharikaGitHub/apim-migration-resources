@@ -136,7 +136,8 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
     }
 
     private void externalStoreMigration() throws APIMigrationException {
-        log.info("External API store migration for API Manager " + Constants.VERSION_1_9 + " started.");
+        log.info("WSO2 API-M Migration Task : External API store migration for API Manager " + Constants.VERSION_1_9
+                + " started.");
         for (Tenant tenant : getTenantsArray()) {
             if (log.isDebugEnabled()) {
                 log.debug("Start API store migration for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
@@ -157,16 +158,16 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
                                                                  modifiedConfig);
 
             } catch (RegistryException e) {
-                log.error("Error occurred while accessing the registry", e);
+                log.error("WSO2 API-M Migration Task : Error occurred while accessing the registry", e);
                 try {
                     registryService.rollbackGovernanceRegistryTransaction();
                 } catch (org.wso2.carbon.registry.core.exceptions.RegistryException ex) {
-                    log.error("Error occurred while accessing the registry", ex);
+                    log.error("WSO2 API-M Migration Task : Error occurred while accessing the registry", ex);
                 } catch (UserStoreException ex) {
-                    log.error("Error occurred while reading tenant information", ex);
+                    log.error("WSO2 API-M Migration Task : Error occurred while reading tenant information", ex);
                 }
             } catch (UserStoreException e) {
-                log.error("Error occurred while reading tenant information", e);
+                log.error("WSO2 API-M Migration Task : Error occurred while reading tenant information", e);
             } finally {
                 registryService.endTenantFlow();
             }
@@ -230,7 +231,7 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
      * @throws APIMigrationException
      */
     private void rxtMigration() throws APIMigrationException {
-        log.info("Rxt migration for API Manager " + Constants.VERSION_1_9 + " started.");
+        log.info("WSO2 API-M Migration Task : Rxt migration for API Manager " + Constants.VERSION_1_9 + " started.");
 
         boolean isTenantFlowStarted = false;
         for (Tenant tenant : getTenantsArray()) {
@@ -264,20 +265,20 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
                             API api = APIUtil.getAPI(artifact, registry);
 
                             if (api == null) {
-                                log.error("Cannot find corresponding api for registry artifact " +
-                                          artifact.getAttribute("overview_name") + '-' +
-                                          artifact.getAttribute("overview_version") + '-' +
-                                          artifact.getAttribute("overview_provider") +
-                                          " of tenant " + tenant.getId() + '(' + tenant.getDomain() + ") in AM_DB");
+                                log.error("WSO2 API-M Migration Task : Cannot find corresponding api for registry artifact " +
+                                      artifact.getAttribute("overview_name") + '-' +
+                                      artifact.getAttribute("overview_version") + '-' +
+                                      artifact.getAttribute("overview_provider") +
+                                      " of tenant " + tenant.getId() + '(' + tenant.getDomain() + ") in AM_DB");
                                 continue;
                             }
 
                             if (log.isDebugEnabled()) {
                                 log.debug("Doing the RXT migration for API : " +
-                                          artifact.getAttribute("overview_name") + '-' +
-                                          artifact.getAttribute("overview_version") + '-' +
-                                          artifact.getAttribute("overview_provider") +
-                                          " of tenant " + tenant.getId() + '(' + tenant.getDomain() + ")");
+                                      artifact.getAttribute("overview_name") + '-' +
+                                      artifact.getAttribute("overview_version") + '-' +
+                                      artifact.getAttribute("overview_provider") +
+                                      " of tenant " + tenant.getId() + '(' + tenant.getDomain() + ")");
                             }
 
                             APIIdentifier apiIdentifier = api.getId();
@@ -299,10 +300,10 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
                             artifactManager.updateGenericArtifact(artifact);
                         } catch (Exception e) {
                             // we log the error and continue to the next resource.
-                            log.error("Unable to migrate api metadata definition of API : " +
-                                      artifact.getAttribute("overview_name") + '-' +
-                                      artifact.getAttribute("overview_version") + '-' +
-                                      artifact.getAttribute("overview_provider"), e);
+                            log.error("WSO2 API-M Migration Task : Unable to migrate api metadata definition of API : " +
+                              artifact.getAttribute("overview_name") + '-' +
+                              artifact.getAttribute("overview_version") + '-' +
+                              artifact.getAttribute("overview_provider"), e);
                         }
                     }
                 } else {
@@ -312,11 +313,11 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
                     }
                 }
             } catch (APIManagementException e) {
-                log.error("Error occurred while reading API from the artifact ", e);
+                log.error("WSO2 API-M Migration Task : Error occurred while reading API from the artifact ", e);
             } catch (RegistryException e) {
-                log.error("Error occurred while accessing the registry", e);
+                log.error("WSO2 API-M Migration Task : Error occurred while accessing the registry", e);
             } catch (UserStoreException e) {
-                log.error("Error occurred while reading tenant information", e);
+                log.error("WSO2 API-M Migration Task : Error occurred while reading tenant information", e);
             } finally {
                 if (isTenantFlowStarted) {
                     PrivilegedCarbonContext.endTenantFlow();
@@ -326,7 +327,7 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
                 log.debug("End rxtMigration for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
             }
         }
-        log.info("Rxt resource migration done for all the tenants");
+        log.info("WSO2 API-M Migration Task : Rxt resource migration done for all the tenants");
     }
 
 
@@ -374,11 +375,12 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
                     ServiceHolder.getRealmService().getTenantUserRealm(tenant.getId()).getAuthorizationManager()
                             .authorizeRole(APIConstants.ANONYMOUS_ROLE, resourcePath, ActionConstants.GET);
                 } catch (UserStoreException e) {
-                    log.error("Error occurred while searching for tenant admin. ", e);
+                    log.error("WSO2 API-M Migration Task : Error occurred while searching for tenant admin. ", e);
                 } catch (RegistryException e) {
-                    log.error("Error occurred while performing registry operation. ", e);
+                    log.error("WSO2 API-M Migration Task : Error occurred while performing registry operation. ", e);
                 } catch (Exception e) {
-                    log.error("Unable to copy the new RXT for tenant : " + tenant.getDomain(), e);
+                    log.error("WSO2 API-M Migration Task : Unable to copy the new RXT for tenant : " +
+                            tenant.getDomain(), e);
                 } finally {
                     if (isTenantFlowStarted) {
                         PrivilegedCarbonContext.endTenantFlow();
@@ -398,7 +400,7 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
      * @throws APIMigrationException
      */
     private void swaggerResourceMigration() throws APIMigrationException {
-        log.info("Swagger migration for API Manager " + Constants.VERSION_1_9 + " started.");
+        log.info("WSO2 API-M Migration Task : Swagger migration for API Manager " + Constants.VERSION_1_9 + " started.");
 
         for (Tenant tenant : getTenantsArray()) {
             if (log.isDebugEnabled()) {
@@ -413,7 +415,8 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
                 // updateSwaggerResources(artifacts, tenant);
             } catch (Exception e) {
                 // If any exception happen during a tenant data migration, we continue the other tenants
-                log.error("Unable to migrate the swagger resources of tenant : " + tenant.getDomain());
+                log.error("WSO2 API-M Migration Task : Unable to migrate the swagger resources of tenant : "
+                        + tenant.getDomain());
             } finally {
                 registryService.endTenantFlow();
             }
@@ -423,7 +426,7 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
             }
         }
 
-        log.info("Swagger resource migration done for all the tenants.");
+        log.info("WSO2 API-M Migration Task : Swagger resource migration done for all the tenants.");
     }
 
 //    private void updateSwaggerResources(GenericArtifact[] artifacts, Tenant tenant) throws APIMigrationException {
@@ -618,7 +621,7 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
                 }
             }
         } else {
-            log.error("Cannot find resources in swagger v1.2 document");
+            log.error("WSO2 API-M Migration Task : Cannot find resources in swagger v1.2 document");
         }
     }
 
@@ -895,7 +898,8 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
                                 pathItemObj.put(method.toLowerCase(), swagger2OperationsObj);
                             }
                         } else {
-                            log.error("Needed parameter method does not exists in swagger v1.2 doc");
+                            log.error("WSO2 API-M Migration Task : Needed parameter method does not exists in "
+                                    + "swagger v1.2 doc");
                         }
                     }
                 }
@@ -903,8 +907,8 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
                 // Adding the constructed paths element
                 pathsObj.put(key, pathItemObj);
             } catch (Exception e) {
-                log.error("Error occurred while doing the swagger paths migration. key : " + entry.getKey() + " value" +
-                          " : " + entry.getValue().toString(), e);
+                log.error("WSO2 API-M Migration Task : Error occurred while doing the swagger paths migration. key : "
+                        + entry.getKey() + " value" + " : " + entry.getValue().toString(), e);
             }
         }
         return pathsObj;
@@ -1051,7 +1055,7 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
      */
     @Override
     public void cleanOldResources() throws APIMigrationException {
-        log.info("Resource cleanup started for API Manager " + Constants.VERSION_1_9);
+        log.info("WSO2 API-M Migration Task : Resource cleanup started for API Manager " + Constants.VERSION_1_9);
 
         for (Tenant tenant : getTenantsArray()) {
             try {
@@ -1089,16 +1093,19 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
                         }
                     } catch (Exception e) {
                         // We log any exception that occurs and move to the next artifact.
-                        log.error("API Management Exception occurred while cleaning the swagger resources of tenant :" +
-                                  tenant.getDomain() + " of api : " + artifact.getAttribute("overview_name") + '-' +
-                                                                     artifact.getAttribute("overview_version") + '-' +
-                                                                     artifact.getAttribute("overview_provider"), e);
+                        log.error("WSO2 API-M Migration Task : API Management Exception occurred while cleaning the "
+                            + "swagger resources of tenant :" + tenant.getDomain() + " of api : " +
+                            artifact.getAttribute("overview_name") + '-' +
+                            artifact.getAttribute("overview_version") + '-' +
+                            artifact.getAttribute("overview_provider"), e);
                     }
                 }
             } catch (UserStoreException e) {
-                log.error("Error occurred while reading tenant admin of tenant : " + tenant.getDomain(), e);
+                log.error("WSO2 API-M Migration Task : Error occurred while reading tenant admin of tenant : "
+                        + tenant.getDomain(), e);
             } catch (RegistryException e) {
-                log.error("Error occurred while accessing the registry of tenant  : " + tenant.getDomain(), e);
+                log.error("WSO2 API-M Migration Task : Error occurred while accessing the registry of tenant  : "
+                        + tenant.getDomain(), e);
             } finally {
                 PrivilegedCarbonContext.endTenantFlow();
             }
@@ -1174,9 +1181,9 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
                 ResourceUtil.copyNewSequenceToExistingSequences(SequenceFilePath, "_token_fault_");
                 ResourceUtil.copyNewSequenceToExistingSequences(SequenceFilePath, "fault");
             } catch (IOException e) {
-                log.error("Error occurred while reading file to copy.", e);
+                log.error("WSO2 API-M Migration Task : Error occurred while reading file to copy.", e);
             } catch (APIMigrationException e) {
-                log.error("Copying sequences failed", e);
+                log.error("WSO2 API-M Migration Task : Copying sequences failed", e);
             }
 
             if (log.isDebugEnabled()) {
@@ -1231,15 +1238,20 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
                         ResourceUtil.updateSynapseAPI(doc, synapseFile);
                     }
                 } catch (ParserConfigurationException e) {
-                    log.error("Parsing exception encountered for " + synapseFile.getAbsolutePath(), e);
+                    log.error("WSO2 API-M Migration Task : Parsing exception encountered for "
+                            + synapseFile.getAbsolutePath(), e);
                 } catch (SAXException e) {
-                    log.error("SAX exception encountered for " + synapseFile.getAbsolutePath(), e);
+                    log.error("WSO2 API-M Migration Task : SAX exception encountered for "
+                            + synapseFile.getAbsolutePath(), e);
                 } catch (IOException e) {
-                    log.error("IO exception encountered for " + synapseFile.getAbsolutePath(), e);
+                    log.error("WSO2 API-M Migration Task : IO exception encountered for "
+                            + synapseFile.getAbsolutePath(), e);
                 } catch (APIMigrationException e) {
-                    log.error("Updating synapse file failed for " + synapseFile.getAbsolutePath(), e);
+                    log.error("WSO2 API-M Migration Task : Updating synapse file failed for "
+                            + synapseFile.getAbsolutePath(), e);
                 } catch (Exception e){
-                    log.error("Error occurred while migrating the Synapse file : " + synapseFile.getAbsolutePath(), e);
+                    log.error("WSO2 API-M Migration Task : Error occurred while migrating the Synapse file : "
+                            + synapseFile.getAbsolutePath(), e);
                 }
             }
 
@@ -1337,13 +1349,13 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
                     sp.setPermissionAndRoleConfig(permissionsAndRoleConfig);
                     applicationManagementService.updateApplication(sp, tenantDomain, userName1);
                 } catch (Exception e) {
-                    log.error("Error while populating SP_APP table.", e);
+                    log.error("WSO2 API-M Migration Task : Error while populating SP_APP table.", e);
                 } finally {
                     PrivilegedCarbonContext.endTenantFlow();
                 }
             }
         } catch (Exception e) {
-            log.error("Error while populating SP_APP table.", e);
+            log.error("WSO2 API-M Migration Task : Error while populating SP_APP table.", e);
         }
     }
 
@@ -1445,9 +1457,9 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
                 }
             }
         } catch (SQLException e) {
-            log.error("Error while updating IDN_OAUTH_CONSUMER_APPS table.", e);
+            log.error("WSO2 API-M Migration Task : Error while updating IDN_OAUTH_CONSUMER_APPS table.", e);
         } catch (APIMigrationException e) {
-            log.error("Error while updating IDN_OAUTH_CONSUMER_APPS table.", e);
+            log.error("WSO2 API-M Migration Task : Error while updating IDN_OAUTH_CONSUMER_APPS table.", e);
         } finally {
             try {
                 if (preparedStatement != null) {
@@ -1475,7 +1487,7 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
                     resultSet2.close();
                 }
             } catch (SQLException e) {
-                log.error("Error while closing the stream.", e);
+                log.error("WSO2 API-M Migration Task : Error while closing the stream.", e);
             }
         }
     }
@@ -1498,7 +1510,7 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
             preparedStatement.executeUpdate();
             connection.commit();
         } catch (SQLException e) {
-            log.error("Error while updating MetaData table.", e);
+            log.error("WSO2 API-M Migration Task : Error while updating MetaData table.", e);
         } finally {
             try {
                 if (preparedStatement != null) {
@@ -1508,7 +1520,7 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
                     connection.close();
                 }
             } catch (SQLException e) {
-                log.error("Error while closing the stream.", e);
+                log.error("WSO2 API-M Migration Task : Error while closing the stream.", e);
             }
         }
 

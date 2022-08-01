@@ -231,8 +231,8 @@ public class DBManagerImpl implements DBManager {
                         //ConsumerKey not in the AM_APPLICATION_KEY_MAPPING table.
                         if (!resultSetFromAMDB.next()) {
                             // Remove from the migrate data
-                            log.warn("ConsumerKey " + consumerKey + " Does not contain in the " +
-                                    "AM_APPLICATION_KEY_MAPPING table.");
+                            log.info("WSO2 API-M Migration Task : ConsumerKey " + consumerKey + " Does not contain "
+                                    + "in the AM_APPLICATION_KEY_MAPPING table.");
                             continue;
                         } else {
                             applicationId = resultSetFromAMDB.getInt("APPLICATION_ID");
@@ -395,8 +395,8 @@ public class DBManagerImpl implements DBManager {
                     //ConsumerKey not in the AM_APPLICATION_KEY_MAPPING table.
                     if (!resultSetFromAMDB.next()) {
                         // Remove from the migrate data
-                        log.warn("ConsumerKey " + consumerKey + " Does not contain in the " +
-                                "AM_APPLICATION_KEY_MAPPING table.");
+                        log.info("WSO2 API-M Migration Task : ConsumerKey " + consumerKey + " Does not contain in "
+                                + "the AM_APPLICATION_KEY_MAPPING table.");
                         continue;
                     } else {
                         applicationId = resultSetFromAMDB.getInt("APPLICATION_ID");
@@ -580,8 +580,8 @@ public class DBManagerImpl implements DBManager {
                     //ConsumerKey not in the AM_APPLICATION_KEY_MAPPING table.
                     if (!resultSetFromAMDB.next()) {
                         // Remove from the migrate data
-                        log.warn("ConsumerKey " + consumerKey + " Does not contain in the " +
-                                "AM_APPLICATION_KEY_MAPPING table.");
+                        log.info("WSO2 API-M Migration Task : ConsumerKey " + consumerKey + " Does not contain in "
+                                + "the AM_APPLICATION_KEY_MAPPING table.");
                         continue;
                     } else {
                         applicationId = resultSetFromAMDB.getInt("APPLICATION_ID");
@@ -1250,7 +1250,7 @@ public class DBManagerImpl implements DBManager {
                     //ConsumerKey not in the AM_APPLICATION_KEY_MAPPING table.
                     if (!resultSetFromAMDB.next()) {
                         // Remove from the migrate data
-                        log.warn("ConsumerKey " + consumerKey + " Does not contain in the " +
+                        log.info("WSO2 API-M Migration Task : ConsumerKey " + consumerKey + " Does not contain in the " +
                                 "AM_APPLICATION_KEY_MAPPING table.");
                         continue;
                     } else {
@@ -1568,7 +1568,7 @@ public class DBManagerImpl implements DBManager {
                 resultSet.close();
             } catch (SQLException e) {
                 //this is logged and the process is continued because the query has executed
-                log.error("Error occurred while closing the result set from JDBC database.", e);
+                log.error("WSO2 API-M Migration Task : Error occurred while closing the result set from JDBC database.", e);
             }
         }
         if (preparedStatement != null) {
@@ -1576,7 +1576,8 @@ public class DBManagerImpl implements DBManager {
                 preparedStatement.close();
             } catch (SQLException e) {
                 //this is logged and the process is continued because the query has executed
-                log.error("Error occurred while closing the prepared statement from JDBC database.", e);
+                log.error("WSO2 API-M Migration Task : Error occurred while closing the prepared statement from "
+                        + "JDBC database.", e);
             }
         }
         if (connection != null) {
@@ -1584,7 +1585,7 @@ public class DBManagerImpl implements DBManager {
                 connection.close();
             } catch (SQLException e) {
                 //this is logged and the process is continued because the query has executed
-                log.error("Error occurred while closing the JDBC database connection.", e);
+                log.error("WSO2 API-M Migration Task : Error occurred while closing the JDBC database connection.", e);
             }
         }
     }
@@ -1888,7 +1889,7 @@ public class DBManagerImpl implements DBManager {
         } catch (SQLException e) {
             // SQL error related to table not exist is db specific
             // error is logged and continues.
-            log.error("Error occurred while checking existence of the table:" + tableName, e);
+            log.error("WSO2 API-M Migration Task : Error occurred while checking existence of the table:" + tableName, e);
             return false;
         } finally {
             if (rs != null) {
@@ -1897,7 +1898,8 @@ public class DBManagerImpl implements DBManager {
                 } catch (SQLException e) {
                     // this is logged and the process is continued because the
                     // query has executed
-                    log.error("Error occurred while closing the result set from JDBC database.", e);
+                    log.error("WSO2 API-M Migration Task : Error occurred while closing the result set from JDBC"
+                            + " database.", e);
                 }
             }
             if (statement != null) {
@@ -1906,7 +1908,8 @@ public class DBManagerImpl implements DBManager {
                 } catch (SQLException e) {
                     // this is logged and the process is continued because the
                     // query has executed
-                    log.error("Error occurred while closing the prepared statement from JDBC database.", e);
+                    log.error("WSO2 API-M Migration Task : Error occurred while closing the prepared statement from"
+                            + " JDBC database.", e);
                 }
             }
             // connection object will not be closed as it should be handled by

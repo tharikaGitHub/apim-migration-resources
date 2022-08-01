@@ -190,6 +190,8 @@ public class MigrateFrom320 extends MigrationClientBase implements MigrationClie
         try {
             List<Tenant> tenants = APIUtil.getAllTenantsWithSuperTenant();
             for (Tenant tenant : tenants) {
+                log.info("WSO2 API-M Migration Task : Updating Registry paths of API icons and WSDLs of "
+                        + "tenant " + + tenant.getId() + '(' + tenant.getDomain() + ')');
                 List<APIInfoDTO> apiInfoDTOList = new ArrayList<>();
                 int apiTenantId = tenantManager.getTenantId(tenant.getDomain());
                 APIUtil.loadTenantRegistry(apiTenantId);
@@ -263,18 +265,21 @@ public class MigrateFrom320 extends MigrationClientBase implements MigrationClie
                 PrivilegedCarbonContext.endTenantFlow();
             }
         } catch (RegistryException e) {
-            log.error("Error while intitiation the registry", e);
+            log.error("WSO2 API-M Migration Task : Error while initializing the registry", e);
         } catch (UserStoreException e) {
-            log.error("Error while retrieving the tenants", e);
+            log.error("WSO2 API-M Migration Task : Error while retrieving the tenants", e);
         } catch (APIManagementException e) {
-            log.error("Error while Retrieving API artifact from the registry", e);
+            log.error("WSO2 API-M Migration Task : Error while Retrieving API artifact from the registry", e);
         }
+        log.info("WSO2 API-M Migration Task : Updated Registry paths of API icons and WSDLs of all tenants");
     }
 
     public void apiRevisionRelatedMigration() throws APIMigrationException {
         try {
             List<Tenant> tenants = APIUtil.getAllTenantsWithSuperTenant();
             for (Tenant tenant : tenants) {
+                log.info("WSO2 API-M Migration Task : Starting API Revision related migration for tenant " +
+                        tenant.getId() + '(' + tenant.getDomain() + ')');
                 List<APIInfoDTO> apiInfoDTOList = new ArrayList<>();
                 List<Environment> dynamicEnvironments = ApiMgtDAO.getInstance()
                         .getAllEnvironments(tenant.getDomain());
@@ -387,14 +392,15 @@ public class MigrateFrom320 extends MigrationClientBase implements MigrationClie
                 }
             }
         } catch (RegistryException e) {
-            log.error("Error while intitiation the registry", e);
+            log.error("WSO2 API-M Migration Task : Error while initializing the registry", e);
         } catch (UserStoreException e){
-            log.error("Error while retrieving the tenants", e);
+            log.error("WSO2 API-M Migration Task : Error while retrieving the tenants", e);
         } catch (APIManagementException e) {
-            log.error("Error while Retrieving API artifact from the registry", e);
+            log.error("WSO2 API-M Migration Task : Error while Retrieving API artifact from the registry", e);
         } finally {
             PrivilegedCarbonContext.endTenantFlow();
         }
+        log.info("WSO2 API-M Migration Task : Completed API Revision related migration for all tenants");
     }
 
     public void migrateProductMappingTable() throws APIMigrationException {
@@ -428,13 +434,17 @@ public class MigrateFrom320 extends MigrationClientBase implements MigrationClie
                                 .concat(END_CERTIFICATE_STRING);
                         base64EncodedString = Base64.encodeBase64URLSafeString(base64EncodedString.getBytes());
                         certificateMap.put(alias, base64EncodedString);
+                        log.info("WSO2 API-M Migration Task : Adding encoded certificate content of alias: " + alias
+                                + " to DB");
                     }
                 }
+            } else {
+                log.info("WSO2 API-M Migration Task : No endpoint certificates defined");
             }
             APIMgtDAO.getInstance().updateEndpointCertificates(certificateMap);
         } catch (NoSuchAlgorithmException | IOException | CertificateException
                 | KeyStoreException | APIMigrationException e) {
-            log.error("Error while Migrating Endpoint Certificates", e);
+            log.error("WSO2 API-M Migration Task : Error while Migrating Endpoint Certificates", e);
         }
     }
 
@@ -444,6 +454,8 @@ public class MigrateFrom320 extends MigrationClientBase implements MigrationClie
 
         for (Tenant tenant : getTenantsArray()) {
             //Add tenant specific resident key manager with uuids to the AM_KEY_MANAGER table
+            log.info("WSO2 API-M Migration Task : Adding default key manager and updating key mappings for tenant: "
+                    + tenant.getId() + "(" + tenant.getDomain() + ")");
             addDefaultKM(apiMgtDAO, tenant.getDomain());
             apiMgtDAO.replaceKeyMappingKMNamebyUUID(tenant);
             apiMgtDAO.replaceRegistrationKMNamebyUUID(tenant);
@@ -501,14 +513,22 @@ public class MigrateFrom320 extends MigrationClientBase implements MigrationClie
                 }
                 environment.setVhosts(vhosts);
                 environments.add(environment);
+                log.info("WSO2 API-M Migration Task : Converting label " + labelDTO.getName() + "of tenant " +
+                        labelDTO.getTenantDomain() + " to a Vhost");
             }
             // insert dynamic environments
             apiMgtDAO.addDynamicGatewayEnvironments(environments);
+            if (!labelDTOS.isEmpty()) {
+                log.info("WSO2 API-M Migration Task : Converted labels to Vhosts");
+            } else {
+                log.info("WSO2 API-M Migration Task : No labels found");
+            }
             apiMgtDAO.dropLabelTable();
+            log.info("WSO2 API-M Migration Task : Dropped AM_LABELS and AM_LABEL_URLS tables");
         } catch (APIMigrationException e) {
-            log.error("Error while Reading Labels", e);
+            log.error("WSO2 API-M Migration Task : Error while Reading Labels", e);
         } catch (APIManagementException e) {
-            log.error("Error while Converting Endpoint URLs to VHost", e);
+            log.error("WSO2 API-M Migration Task : Error while Converting Endpoint URLs to VHost", e);
         }
     }
 
@@ -547,7 +567,7 @@ public class MigrateFrom320 extends MigrationClientBase implements MigrationClie
                                         APIUtil.getTenantAdminUserName(tenant.getDomain()));
                                 apiProviderTenant.saveAsyncApiDefinition(api, apiDefinition);
                             } else {
-                                log.error("Async Api definition is not added for the API " +
+                                log.error("WSO2 API-M Migration Task : Async Api definition is not added for the API " +
                                         artifact.getAttribute(org.wso2.carbon.apimgt.impl.APIConstants.API_OVERVIEW_NAME)
                                         + " due to returned API is null");
                             }
@@ -561,13 +581,13 @@ public class MigrateFrom320 extends MigrationClientBase implements MigrationClie
             //  add default url templates
             apiMgtDAO.addDefaultURLTemplatesForWSAPIs(wsAPIs);
         } catch (RegistryException e) {
-            log.error("Error while intitiation the registry", e);
+            log.error("WSO2 API-M Migration Task : Error while initializing the registry", e);
         } catch (UserStoreException e) {
-            log.error("Error while retrieving the tenants", e);
+            log.error("WSO2 API-M Migration Task : Error while retrieving the tenants", e);
         } catch (APIManagementException e) {
-            log.error("Error while Retrieving API artifact from the registry", e);
+            log.error("WSO2 API-M Migration Task : Error while Retrieving API artifact from the registry", e);
         } catch (APIMigrationException e) {
-            log.error("Error while migrating WebSocket APIs", e);
+            log.error("WSO2 API-M Migration Task : Error while migrating WebSocket APIs", e);
         }
     }
 
@@ -593,7 +613,7 @@ public class MigrateFrom320 extends MigrationClientBase implements MigrationClie
                     seqCollection = (org.wso2.carbon.registry.api.Collection) registry
                             .get(resourcePath);
                 } else {
-                    log.warn("No fault sequences found for tenant: " + tenant.getDomain());
+                    log.warn("WSO2 API-M Migration Task : No fault sequences found for tenant: " + tenant.getDomain());
                 }
                 if (seqCollection != null) {
                     String[] childPaths = seqCollection.getChildren();
@@ -633,15 +653,15 @@ public class MigrateFrom320 extends MigrationClientBase implements MigrationClie
                 PrivilegedCarbonContext.endTenantFlow();
             }
         } catch (RegistryException e) {
-            log.error("Error while initiating the registry", e);
+            log.error("WSO2 API-M Migration Task : Error while initiating the registry", e);
         } catch (UserStoreException e) {
-            log.error("Error while retrieving the tenants", e);
+            log.error("WSO2 API-M Migration Task : Error while retrieving the tenants", e);
         } catch (APIManagementException e) {
-            log.error("Error while retrieving tenant admin's username", e);
+            log.error("WSO2 API-M Migration Task : Error while retrieving tenant admin's username", e);
         } catch (org.wso2.carbon.registry.api.RegistryException e) {
-            log.error("Error while retrieving fault sequences", e);
+            log.error("WSO2 API-M Migration Task : Error while retrieving fault sequences", e);
         } catch (Exception e) {
-            log.error("Error while removing unnecessary fault handlers from fault sequences", e);
+            log.error("WSO2 API-M Migration Task : Error while removing unnecessary fault handlers from fault sequences", e);
         }
     }
 

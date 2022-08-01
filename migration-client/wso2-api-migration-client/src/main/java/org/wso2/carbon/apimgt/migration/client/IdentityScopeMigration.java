@@ -49,6 +49,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLInputFactory;
@@ -76,6 +77,7 @@ public class IdentityScopeMigration {
         Map<Integer, Map<String, Scope>> scopesMap = new HashMap<>();
         boolean scopesMigrated = isScopesMigrated();
         if (!scopesMigrated) {
+            log.info("WSO2 API-M Migration Task : Starting identity scope migration");
             String query = SELECT_SCOPES_QUERY_LEFT;
             List<String> identityScopes = retrieveIdentityScopes();
             query = query.replaceAll("SCOPE_SKIP_LIST", StringUtils.repeat("?", ",", identityScopes.size()));
@@ -121,11 +123,19 @@ public class IdentityScopeMigration {
                     if (scopeMap != null) {
                         Set<Scope> scopeSet = new HashSet<>(scopeMap.values());
                         scopesDAO.addScopes(scopeSet, scopesMapEntry.getKey());
+                        String scopeStr = scopeSet.stream().map(scope -> scope.getKey())
+                                .collect(Collectors.joining(", "));
+                        log.info("WSO2 API-M Migration Task : Successfully migrated scopes ("
+                                + scopeStr + ") of tenant: "+ scopesMapEntry.getKey() +" from IDN_OAUTH2_SCOPE table "
+                                + "to AM_SCOPE table");
                     }
                 }
             } catch (SQLException e) {
-                throw new APIManagementException("Error while retrieving database connection", e);
+                throw new APIManagementException("WSO2 API-M Migration Task : Error while retrieving database "
+                        + "connection", e);
             }
+        } else {
+            log.info("WSO2 API-M Migration Task : Scopes are already migrated, hence skipping this step");
         }
     }
 
@@ -154,7 +164,7 @@ public class IdentityScopeMigration {
                 .toString();
         File configFile = new File(confXml);
         if (!configFile.exists()) {
-            log.warn("OAuth scope binding File is not present at: " + confXml);
+            log.info("WSO2 API-M Migration Task : OAuth scope binding File is not present at: " + confXml);
             return new ArrayList<>();
         }
 
@@ -175,9 +185,9 @@ public class IdentityScopeMigration {
                 scopes.add(scopeName);
             }
         } catch (XMLStreamException e) {
-            log.warn("Error while loading scope config.", e);
+            log.info("WSO2 API-M Migration Task : Error while loading scope config.", e);
         } catch (FileNotFoundException e) {
-            log.warn("Error while loading email config.", e);
+            log.info("WSO2 API-M Migration Task : Error while loading email config.", e);
         } finally {
             try {
                 if (parser != null) {
@@ -187,7 +197,7 @@ public class IdentityScopeMigration {
                     IdentityIOStreamUtils.closeInputStream(stream);
                 }
             } catch (XMLStreamException e) {
-                log.error("Error while closing XML stream", e);
+                log.error("WSO2 API-M Migration Task : Error while closing XML stream", e);
             }
         }
         return scopes;

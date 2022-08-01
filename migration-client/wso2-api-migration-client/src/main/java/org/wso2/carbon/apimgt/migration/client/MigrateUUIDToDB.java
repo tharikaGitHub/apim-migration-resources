@@ -60,7 +60,7 @@ public class MigrateUUIDToDB extends MigrationClientBase{
      * @throws APIMigrationException
      */
     public void moveUUIDToDBFromRegistry() throws APIMigrationException {
-
+        log.info("WSO2 API-M Migration Task : Adding API UUID and STATUS to AM_API table for all tenants");
         List<APIInfoDTO> apiInfoDTOList = new ArrayList<>();
         try {
             List<Tenant> tenants = APIUtil.getAllTenantsWithSuperTenant();
@@ -93,13 +93,13 @@ public class MigrateUUIDToDB extends MigrationClientBase{
                 }
             }
             apiMgtDAO.updateUUIDAndStatus(apiInfoDTOList);
-
+            log.info("WSO2 API-M Migration Task : Added API UUID and STATUS to AM_API table for all tenants");
         } catch (RegistryException e) {
-            log.error("Error while intitiation the registry", e);
+            log.error("WSO2 API-M Migration Task : Error while initializing the registry", e);
         } catch (UserStoreException e) {
-            log.error("Error while retrieving the tenants", e);
+            log.error("WSO2 API-M Migration Task : Error while retrieving the tenants", e);
         } catch (APIManagementException e) {
-            log.error("Error while Retrieving API artifact from the registry", e);
+            log.error("WSO2 API-M Migration Task : Error while Retrieving API artifact from the registry", e);
         }
 
     }

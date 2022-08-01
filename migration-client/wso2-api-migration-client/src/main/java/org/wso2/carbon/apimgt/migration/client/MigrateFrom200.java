@@ -109,11 +109,11 @@ public class MigrateFrom200 extends MigrationClientBase implements MigrationClie
     }
 
     public void addDefaultRoleCreationConfig() throws APIMigrationException {
-        log.info("Add config in tenant-conf.json to enable default roles creation.");
+        log.info("WSO2 API-M Migration Task : Add config in tenant-conf.json to enable default roles creation.");
         for (Tenant tenant : getTenantsArray()) {
             try {
                 registryService.startTenantFlow(tenant);
-                log.info("Updating tenant-conf.json of tenant " + tenant.getId() + '(' +
+                log.info("WSO2 API-M Migration Task : Updating tenant-conf.json of tenant " + tenant.getId() + '(' +
                         tenant.getDomain() + ')');
                 // Retrieve the tenant-conf.json of the corresponding tenant
                 JSONObject tenantConf = APIUtil.getTenantConfig(tenant.getDomain());
@@ -138,19 +138,23 @@ public class MigrateFrom200 extends MigrationClientBase implements MigrationClie
                     String formattedTenantConf = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(tenantConf);
 
                     APIUtil.updateTenantConf(formattedTenantConf, tenant.getDomain());
-                    log.info("Updated tenant-conf.json for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')'
-                            + "\n" + formattedTenantConf);
+                    log.info("WSO2 API-M Migration Task : Updated tenant-conf.json for tenant " + tenant.getId() +
+                            '(' + tenant.getDomain() + ')' + "\n" + formattedTenantConf);
 
-                    log.info("End updating tenant-conf.json to add default role creation configuration for tenant "
-                            + tenant.getId() + '(' + tenant.getDomain() + ')');
+                    log.info("WSO2 API-M Migration Task : End updating tenant-conf.json to add default role creation"
+                            + " configuration for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
                 }
             } catch (APIManagementException e) {
-                log.error("Error while retrieving the tenant-conf.json of tenant " + tenant.getId(), e);
+                log.error("WSO2 API-M Migration Task : Error while retrieving the tenant-conf.json of tenant " +
+                        tenant.getId(), e);
             } catch (JsonProcessingException e) {
-                log.error("Error while formatting tenant-conf.json of tenant " + tenant.getId(), e);
+                log.error("WSO2 API-M Migration Task : Error while formatting tenant-conf.json of tenant " +
+                        tenant.getId(), e);
             } finally {
                 registryService.endTenantFlow();
             }
         }
+        log.info("WSO2 API-M Migration Task : Successfully added config in tenant-conf.json to enable default roles"
+                + " creation for all tenants");
     }
 }

@@ -137,7 +137,7 @@ public class MigrateFrom310 extends MigrationClientBase implements MigrationClie
     public void scopeMigration() throws APIMigrationException {
 
         APIMgtDAO apiMgtDAO = APIMgtDAO.getInstance();
-        // Step 1: remove duplicate entries
+        // Step 1: remove duplicate entries for scopes attached to multiple resources of the same API
         ArrayList<APIScopeMappingDTO> duplicateList = new ArrayList<>();
         ArrayList<APIScopeMappingDTO> scopeAMData = apiMgtDAO.getAMScopeData();
         ArrayList<ResourceScopeInfoDTO> scopeResourceData = apiMgtDAO.getResourceScopeData();
@@ -153,10 +153,15 @@ public class MigrateFrom310 extends MigrationClientBase implements MigrationClie
             }
         }
         apiMgtDAO.removeDuplicateScopeEntries(duplicateList);
+        if (!duplicateList.isEmpty()) {
+            log.info("WSO2 API-M Migration Task : Removed duplicate scope entries for scopes attached to multiple "
+                    + "resources of the same API, from IDN_OAUTH2_SCOPE, AM_API_SCOPE and IDN_OAUTH2_SCOPE_BINDING tables");
+        }
 
         // Step 2: Remove duplicate versioned scopes registered for versioned APIs
         ArrayList<APIInfoScopeMappingDTO> apiInfoScopeMappingDTOS = apiMgtDAO.getAPIInfoScopeData();
         Map<String, Integer> apiScopeToScopeIdMapping = new HashMap<>();
+        boolean removedVersionedScopes = false;
         for (APIInfoScopeMappingDTO scopeInfoDTO : apiInfoScopeMappingDTOS) {
             String apiScopeKey = scopeInfoDTO.getApiName() + ":" + scopeInfoDTO.getApiProvider() +
                     ":" + scopeInfoDTO.getScopeName();
@@ -170,13 +175,18 @@ public class MigrateFrom310 extends MigrationClientBase implements MigrationClie
                     ArrayList<APIScopeMappingDTO> scopeRemovalList = new ArrayList<>();
                     scopeRemovalList.add(apiScopeMappingDTO);
                     apiMgtDAO.removeDuplicateScopeEntries(scopeRemovalList);
+                    removedVersionedScopes = true;
                 }
             } else {
                 apiScopeToScopeIdMapping.put(apiScopeKey, scopeInfoDTO.getScopeId());
             }
         }
+        if (removedVersionedScopes) {
+            log.info("WSO2 API-M Migration Task : Removed duplicate scope entries for scopes attached to "
+                    + "versioned APIs, from IDN_OAUTH2_SCOPE, AM_API_SCOPE and IDN_OAUTH2_SCOPE_BINDING tables");
+        }
 
-        // Step 3: Move entries in IDN_RESORCE_SCOPE_MAPPING table to AM_API_RESOURCE_SCOPE_MAPPING table
+        // Step 3: Move entries in IDN_RESOURCE_SCOPE_MAPPING table to AM_API_RESOURCE_SCOPE_MAPPING table
         ArrayList<APIInfoDTO> apiData = apiMgtDAO.getAPIData();
         ArrayList<APIURLMappingInfoDTO> urlMappingData = apiMgtDAO.getAPIURLMappingData();
         List<AMAPIResourceScopeMappingDTO> amapiResourceScopeMappingDTOList = new ArrayList<>();
@@ -203,6 +213,10 @@ public class MigrateFrom310 extends MigrationClientBase implements MigrationClie
             }
         }
         apiMgtDAO.addDataToResourceScopeMapping(amapiResourceScopeMappingDTOList);
+        if (!amapiResourceScopeMappingDTOList.isEmpty()) {
+            log.info("WSO2 API-M Migration Task : Moved entries in the IDN_RESOURCE_SCOPE_MAPPING table to "
+                    + "AM_API_RESOURCE_SCOPE_MAPPING table");
+        }
     }
 
     @Override
@@ -214,9 +228,13 @@ public class MigrateFrom310 extends MigrationClientBase implements MigrationClie
         for (Tenant tenant : tenantList) {
             ArrayList<String> consumerKeys = APIMgtDAO.getAppsOfTypeJWT(tenant.getId());
             if (consumerKeys != null) {
+                log.info("WSO2 API-M Migration Task : Updating tokenType property of service providers for JWT "
+                        + "typed applications in tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
                 for (String consumerKey : consumerKeys) {
                     APIMgtDAO.updateTokenTypeToJWT(consumerKey);
                 }
+                log.info("WSO2 API-M Migration Task : Updated tokenType property of service providers identified "
+                        + "by consumer keys " + String.join(",", consumerKeys) + " as JWT");
             }
         }
     }
@@ -226,7 +244,8 @@ public class MigrateFrom310 extends MigrationClientBase implements MigrationClie
         for (Tenant tenant : getTenantsArray()) {
             try {
                 registryService.startTenantFlow(tenant);
-                log.debug("Updating APIs for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
+                log.info("WSO2 API-M Migration Task : Updating APIs for tenant " + tenant.getId() + '(' +
+                        tenant.getDomain() + ')');
                 GenericArtifact[] artifacts = registryService.getGenericAPIArtifacts();
                 for (GenericArtifact artifact : artifacts) {
                     String path = artifact.getPath();
@@ -238,13 +257,14 @@ public class MigrateFrom310 extends MigrationClientBase implements MigrationClie
                         registryService.updateEnableStoreInRxt(path, artifact);
                     }
                 }
-                log.info("Completed Updating API artifacts tenant ---- " + tenant.getId() + '(' + tenant.getDomain() + ')');
+                log.info("WSO2 API-M Migration Task : Completed Updating API artifacts tenant ---- " + tenant.getId()
+                        + '(' + tenant.getDomain() + ')');
             } catch (GovernanceException e) {
-                log.error("Error while accessing API artifact in registry for tenant " + tenant.getId() + '(' +
-                        tenant.getDomain() + ')', e);
+                log.error("WSO2 API-M Migration Task : Error while accessing API artifact in registry for tenant "
+                        + tenant.getId() + '(' + tenant.getDomain() + ')', e);
             } catch (RegistryException | UserStoreException e) {
-                log.error("Error while updating API artifact in the registry for tenant " + tenant.getId() + '(' +
-                        tenant.getDomain() + ')', e);
+                log.error("WSO2 API-M Migration Task : Error while updating API artifact in the registry for tenant "
+                        + tenant.getId() + '(' + tenant.getDomain() + ')', e);
             } finally {
                 registryService.endTenantFlow();
             }
@@ -256,7 +276,8 @@ public class MigrateFrom310 extends MigrationClientBase implements MigrationClie
         for (Tenant tenant : getTenantsArray()) {
             try {
                 registryService.startTenantFlow(tenant);
-                log.debug("Updating API properties for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
+                log.info("WSO2 API-M Migration Task : Updating API properties for tenant " + tenant.getId() +
+                        '(' + tenant.getDomain() + ')');
                 GenericArtifact[] artifacts = registryService.getGenericAPIArtifacts();
                 for (GenericArtifact artifact : artifacts) {
                     String path = artifact.getPath();
@@ -268,14 +289,14 @@ public class MigrateFrom310 extends MigrationClientBase implements MigrationClie
                         registryService.updateAPIPropertyVisibility(path);
                     }
                 }
-                log.info("Completed Updating API properties for tenant ---- "
-                        + tenant.getId() + '(' + tenant.getDomain() + ')');
+                log.info("WSO2 API-M Migration Task : Completed Updating API properties for tenant " + tenant.getId()
+                        + '(' + tenant.getDomain() + ')');
             } catch (GovernanceException e) {
-                log.error("Error while accessing API artifact in registry for tenant " + tenant.getId() + '(' +
-                        tenant.getDomain() + ')', e);
+                log.error("WSO2 API-M Migration Task : Error while accessing API artifact in registry for tenant "
+                        + tenant.getId() + '(' + tenant.getDomain() + ')', e);
             } catch (RegistryException | UserStoreException e) {
-                log.error("Error while updating API artifact in the registry for tenant " + tenant.getId() + '(' +
-                        tenant.getDomain() + ')', e);
+                log.error("WSO2 API-M Migration Task : Error while updating API artifact in the registry for tenant "
+                        + tenant.getId() + '(' + tenant.getDomain() + ')', e);
             } finally {
                 registryService.endTenantFlow();
             }
@@ -325,11 +346,12 @@ public class MigrateFrom310 extends MigrationClientBase implements MigrationClie
                 }
             }
         } catch (RegistryException e) {
-            throw new APIMigrationException("Error while initializing the registry", e);
+            throw new APIMigrationException("WSO2 API-M Migration Task : Error while initializing the registry", e);
         } catch (UserStoreException e) {
-            throw new APIMigrationException("Error while retrieving the tenants", e);
+            throw new APIMigrationException("WSO2 API-M Migration Task : Error while retrieving the tenants", e);
         } catch (APIManagementException e) {
-            throw new APIMigrationException("Error while Retrieving API artifact from the registry", e);
+            throw new APIMigrationException("WSO2 API-M Migration Task : Error while Retrieving API artifact from the"
+                    + " registry", e);
         }
     }
 

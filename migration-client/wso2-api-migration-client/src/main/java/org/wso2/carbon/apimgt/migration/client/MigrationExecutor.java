@@ -109,15 +109,15 @@ public final class MigrationExecutor {
                 MigrationClient[] migrationClients = MigrationClientFactory.getAllClients(arguments.migrateFromVersion);
 
                 if (migrationClients.length > 0) {
-                    log.info("Starting WSO2 API Manager migration");
+                    log.info("WSO2 API-M Migration Task : Starting WSO2 API Manager migration");
 
                     for (MigrationClient migrationClient : migrationClients) {
                         invoke(migrationClient, arguments);
                     }
 
-                    log.info("Ending WSO2 API Manager migration");
+                    log.info("WSO2 API-M Migration Task : Ending WSO2 API Manager migration");
                 } else {
-                    log.error("Migrating from " + arguments.migrateFromVersion +
+                    log.error("WSO2 API-M Migration Task : Migrating from " + arguments.migrateFromVersion +
                             " is not supported. Please check the version and try again.");
                 }
             } else if (arguments.specificVersion != null) {
@@ -126,14 +126,14 @@ public final class MigrationExecutor {
                 if (migrationClient != null) {
                     invoke(migrationClient, arguments);
                 } else {
-                    log.error("The given migration version " + arguments.specificVersion +
+                    log.error("WSO2 API-M Migration Task : The given migration version " + arguments.specificVersion +
                             " is not supported. Please check the version and try again.");
                 }
             } else { // Migration version not specified
                 if (arguments.migrateAll || arguments.cleanupNeeded || arguments.isDBMigration ||
                         arguments.isRegistryMigration || arguments.isFileSystemMigration) {
-                    log.error("The property -D" + Constants.ARG_MIGRATE_FROM_VERSION + " or -D" +
-                            Constants.ARG_RUN_SPECIFIC_VERSION +
+                    log.error("WSO2 API-M Migration Task : The property -D" + Constants.ARG_MIGRATE_FROM_VERSION +
+                            " or -D" + Constants.ARG_RUN_SPECIFIC_VERSION +
                             " has not been specified. Please specify the property you wish to use and try again.");
                 }
             }
@@ -145,7 +145,7 @@ public final class MigrationExecutor {
             SQLException, APIMStatMigrationException {
         //Default operation will migrate all three types of resources
         if (arguments.migrateAll) {
-            log.info("Migrating All WSO2 API Manager resources");
+            log.info("WSO2 API-M Migration Task : Migrating All WSO2 API Manager resources");
             migrationClient.databaseMigration();
             migrationClient.registryResourceMigration();
             migrationClient.fileSystemMigration();
@@ -153,46 +153,46 @@ public final class MigrationExecutor {
         } else {
             //Only performs database migration
             if (arguments.isDBMigration) {
-                log.info("Migrating WSO2 API Manager databases");
+                log.info("WSO2 API-M Migration Task : Migrating WSO2 API Manager databases");
                 migrationClient.databaseMigration();
             }
             //Only performs registry migration
             if (arguments.isRegistryMigration) {
-                log.info("Migrating WSO2 API Manager registry resources");
+                log.info("WSO2 API-M Migration Task : Migrating WSO2 API Manager registry resources");
                 migrationClient.registryResourceMigration();
             }
             //Only performs file system migration
             if (arguments.isFileSystemMigration) {
-                log.info("Migrating WSO2 API Manager file system resources");
+                log.info("WSO2 API-M Migration Task : Migrating WSO2 API Manager file system resources");
                 migrationClient.fileSystemMigration();
             }
 
             if (arguments.isTriggerAPIIndexer) {
-                log.info("Updating API Artifacts");
+                log.info("WSO2 API-M Migration Task : Updating API Artifacts");
                 migrationClient.updateArtifacts();
             }
             //only populate SP_APP table
             if (arguments.isSP_APP_Population) {
-                log.info("Populating SP_APP table");
+                log.info("WSO2 API-M Migration Task : Populating SP_APP table");
                 migrationClient.populateSPAPPs();
             }
         }
         //Old resource cleanup
         if (arguments.cleanupNeeded) {
             migrationClient.cleanOldResources();
-            log.info("Old resources cleaned up.");
+            log.info("WSO2 API-M Migration Task : Old resources cleaned up.");
         }
 
         if (arguments.isStatMigration) {
             StatDBUtil.initialize();
             migrationClient.statsMigration();
-            log.info("Stat migration completed");
+            log.info("WSO2 API-M Migration Task : Stat migration completed");
         }
 
         List<String> options = parseOptions(arguments.getOptions());
         if (options != null && options.size() > 0) {
             migrationClient.tierMigration(options);
-            log.info("optional migration completed");
+            log.info("WSO2 API-M Migration Task : optional migration completed");
         }
     }
 
