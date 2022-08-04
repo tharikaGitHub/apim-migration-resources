@@ -899,7 +899,8 @@ public class APIMgtDAO {
             }
             removeURLMappingsStatement.executeBatch();
         } catch (SQLException e) {
-            throw new APIMigrationException("SQLException when executing updateProductMappings", e);
+            throw new APIMigrationException("WSO2 API-M Migration Task : SQLException when executing "
+                    + "updateProductMappings", e);
         }
     }
 
@@ -914,7 +915,8 @@ public class APIMgtDAO {
         try {
             str = IOUtils.toString(is, "UTF-8");
         } catch (IOException e) {
-            throw new APIMigrationException("Error occurred while converting input stream to string.", e);
+            throw new APIMigrationException("WSO2 API-M Migration Task : Error occurred while converting input stream "
+                    + "to string.", e);
         }
         return str;
     }
@@ -946,7 +948,8 @@ public class APIMgtDAO {
                 }
             }
         } catch (SQLException ex) {
-            throw new APIMigrationException("Failed to get data from AM_LABELS and AM_LABEL_URLS", ex);
+            throw new APIMigrationException("WSO2 API-M Migration Task : Failed to get data from AM_LABELS and "
+                    + "AM_LABEL_URLS", ex);
         }
     }
 
@@ -981,10 +984,12 @@ public class APIMgtDAO {
                 conn.commit();
             } catch (SQLException ex) {
                 conn.rollback();
-                throw new APIMigrationException("Failed to add data to AM_GATEWAY_ENVIRONMENT table : ", ex);
+                throw new APIMigrationException("WSO2 API-M Migration Task : Failed to add data to "
+                        + "AM_GATEWAY_ENVIRONMENT table : ", ex);
             }
         } catch (SQLException ex) {
-            throw new APIMigrationException("Failed to add data to AM_GATEWAY_ENVIRONMENT table : ", ex);
+            throw new APIMigrationException("WSO2 API-M Migration Task : Failed to add data to AM_GATEWAY_ENVIRONMENT "
+                    + "table : ", ex);
         }
     }
 
@@ -1011,7 +1016,7 @@ public class APIMgtDAO {
             }
             prepStmt.executeBatch();
         } catch (SQLException e) {
-            throw new APIMigrationException("Failed to add data to AM_GW_VHOST table : ", e);
+            throw new APIMigrationException("WSO2 API-M Migration Task : Failed to add data to AM_GW_VHOST table : ", e);
         }
     }
 
@@ -1032,10 +1037,12 @@ public class APIMgtDAO {
                 conn.commit();
             } catch (SQLException ex) {
                 conn.rollback();
-                throw new APIMigrationException("Failed to drop tables AM_LABELS and AM_LABEL_URLS : ", ex);
+                throw new APIMigrationException("WSO2 API-M Migration Task : Failed to drop tables AM_LABELS and "
+                        + "AM_LABEL_URLS : ", ex);
             }
         } catch (SQLException ex) {
-            throw new APIMigrationException("Failed to drop tables AM_LABELS and AM_LABEL_URLS : ", ex);
+            throw new APIMigrationException("WSO2 API-M Migration Task : Failed to drop tables AM_LABELS and "
+                    + "AM_LABEL_URLS : ", ex);
         }
     }
 
@@ -1052,7 +1059,7 @@ public class APIMgtDAO {
                 }
             }
         } catch (SQLException ex) {
-            throw new APIMigrationException("Failed to get data from AM_API table", ex);
+            throw new APIMigrationException("WSO2 API-M Migration Task : Failed to get data from AM_API table", ex);
         }
     }
 
@@ -1077,10 +1084,12 @@ public class APIMgtDAO {
                 conn.commit();
             } catch (SQLException e) {
                 conn.rollback();
-                throw new APIMigrationException("Error while adding URL template(s) to the database " + e);
+                throw new APIMigrationException("WSO2 API-M Migration Task : Error while adding URL template(s) to the"
+                        + " database " + e);
             }
         } catch (SQLException e) {
-            throw new APIMigrationException("Error while adding URL template(s) to the database " + e);
+            throw new APIMigrationException("WSO2 API-M Migration Task : Error while adding URL template(s) to the "
+                    + "database " + e);
         }
     }
 
@@ -1102,10 +1111,12 @@ public class APIMgtDAO {
                 conn.commit();
             } catch (SQLException e) {
                 conn.rollback();
-                throw new APIMigrationException("Error while removing URL template(s) from the database " + e);
+                throw new APIMigrationException("WSO2 API-M Migration Task : Error while removing URL template(s) from"
+                        + " the database " + e);
             }
         } catch (SQLException e) {
-            throw new APIMigrationException("Error while removing URL template(s) from the database " + e);
+            throw new APIMigrationException("WSO2 API-M Migration Task : Error while removing URL template(s) from the"
+                    + " database " + e);
         }
     }
 
@@ -1135,16 +1146,16 @@ public class APIMgtDAO {
                         log.warn(keyManagerConfigurationDTO.getName() + " Key Manager Already Registered in tenant" +
                                 keyManagerConfigurationDTO.getTenantDomain());
                     } else {
-                        throw new APIMigrationException("Error while Storing key manager configuration with name " +
-                                keyManagerConfigurationDTO.getName() + " in tenant " +
+                        throw new APIMigrationException("WSO2 API-M Migration Task : Error while Storing key manager "
+                                + "configuration with name " + keyManagerConfigurationDTO.getName() + " in tenant " +
                                 keyManagerConfigurationDTO.getTenantDomain(), e);
                     }
                 }
             }
         } catch (SQLException | IOException e) {
-            throw new APIMigrationException(
-                    "Error while Storing key manager configuration with name " + keyManagerConfigurationDTO.getName() +
-                            " in tenant " + keyManagerConfigurationDTO.getTenantDomain(), e);
+            throw new APIMigrationException("WSO2 API-M Migration Task : Error while Storing key manager configuration"
+                    + " with name " + keyManagerConfigurationDTO.getName() + " in tenant " +
+                    keyManagerConfigurationDTO.getTenantDomain(), e);
         }
     }
 
@@ -1182,6 +1193,42 @@ public class APIMgtDAO {
             throw new APIMigrationException(
                     "Error while retrieving key manager configuration for " + name + " in tenant " + tenantDomain, e);
         }
+    }
+
+    /**
+     * This method is used to update the API_TYPE in AM_API in the DB using API details
+     *
+     * @param apiInfoDTOList API Information list
+     * @param tenantId       tenant ID
+     * @param tenantDomain   tenant domain
+     * @throws APIMigrationException Migration Exception
+     */
+    public void updateAPIType(List<APIInfoDTO> apiInfoDTOList, int tenantId, String tenantDomain) throws APIMigrationException {
+        try (Connection connection = APIMgtDBUtil.getConnection()) {
+            connection.setAutoCommit(false);
+            String query = "UPDATE AM_API SET API_TYPE = ? "
+                    + "WHERE API_PROVIDER = ? AND API_NAME = ? AND API_VERSION = ?";
+            try (PreparedStatement statement = connection.prepareStatement(query)) {
+                for (APIInfoDTO apiInfoDTO : apiInfoDTOList) {
+                    statement.setString(1, apiInfoDTO.getType());
+                    statement.setString(2, apiInfoDTO.getApiProvider());
+                    statement.setString(3, apiInfoDTO.getApiName());
+                    statement.setString(4, apiInfoDTO.getApiVersion());
+                    statement.addBatch();
+                }
+                statement.executeBatch();
+                connection.commit();
+                log.info("Successfully updated API_TYPE for APIs in tenant:" + tenantId + '(' + tenantDomain + ')');
+            } catch (SQLException e) {
+                connection.rollback();
+                throw new APIMigrationException("SQLException while updating API_TYPE for APIs in tenant:"
+                        + tenantId + '(' + tenantDomain + ')', e);
+            }
+        } catch (SQLException e) {
+            throw new APIMigrationException("SQLException while updating API_TYPE for APIs in tenant:"
+                    + tenantId + '(' + tenantDomain + ')', e);
+        }
+
     }
 
     /**
