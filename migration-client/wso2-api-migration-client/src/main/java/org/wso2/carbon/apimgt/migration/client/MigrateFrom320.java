@@ -31,6 +31,7 @@ import org.wso2.carbon.apimgt.api.APIManagementException;
 import org.wso2.carbon.apimgt.api.model.API;
 import org.wso2.carbon.apimgt.api.model.APIProduct;
 import org.wso2.carbon.apimgt.api.APIProvider;
+import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.apimgt.api.model.APIRevision;
 import org.wso2.carbon.apimgt.api.model.APIRevisionDeployment;
 import org.wso2.carbon.apimgt.api.model.Environment;
@@ -235,8 +236,17 @@ public class MigrateFrom320 extends MigrationClientBase implements MigrationClie
                         String wsdlResourcePathOld = APIConstants.API_WSDL_RESOURCE_LOCATION
                                 + RegistryPersistenceUtil.createWsdlFileName(apiInfoDTO.getApiProvider(),
                                 apiInfoDTO.getApiName(), apiInfoDTO.getApiVersion());
+                        APIIdentifier identifier = new APIIdentifier(apiInfoDTO.getApiProvider(),
+                                apiInfoDTO.getApiName(), apiInfoDTO.getApiVersion());
+                        String wsdlResourceArchivePathOld = RegistryPersistenceUtil.getWsdlArchivePath(identifier);
+                        String resourcePath = null;
                         if (registry.resourceExists(wsdlResourcePathOld)) {
-                            Resource resource = registry.get(wsdlResourcePathOld);
+                            resourcePath = wsdlResourcePathOld;
+                        } else if (registry.resourceExists(wsdlResourceArchivePathOld)) {
+                            resourcePath = wsdlResourceArchivePathOld;
+                        }
+                        if (resourcePath != null) {
+                            Resource resource = registry.get(resourcePath);
                             String wsdlResourcePath;
                             String wsdlResourcePathArchive = artifactPath + RegistryConstants.PATH_SEPARATOR
                                     + APIConstants.API_WSDL_ARCHIVE_LOCATION + apiInfoDTO.getApiProvider()
@@ -250,7 +260,7 @@ public class MigrateFrom320 extends MigrationClientBase implements MigrationClie
                             } else {
                                 wsdlResourcePath = wsdlResourcePathFile;
                             }
-                            registry.copy(wsdlResourcePathOld, wsdlResourcePath);
+                            registry.copy(resourcePath, wsdlResourcePath);
                             GenericArtifact apiArtifact = tenantArtifactManager.getGenericArtifact(apiInfoDTO.getUuid());
                             String absoluteWSDLResourcePath = RegistryUtils
                                     .getAbsolutePath(RegistryContext.getBaseInstance(),
