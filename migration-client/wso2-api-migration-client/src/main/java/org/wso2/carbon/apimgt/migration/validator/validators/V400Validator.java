@@ -13,6 +13,7 @@ import org.wso2.carbon.apimgt.impl.definitions.AsyncApiParserUtil;
 import org.wso2.carbon.apimgt.impl.definitions.OASParserUtil;
 import org.wso2.carbon.apimgt.impl.utils.APIMWSDLReader;
 import org.wso2.carbon.apimgt.impl.wsdl.model.WSDLValidationResponse;
+import org.wso2.carbon.apimgt.migration.util.Constants;
 import org.wso2.carbon.apimgt.migration.validator.dao.ApiMgtDAO;
 import org.wso2.carbon.apimgt.migration.validator.utils.Utils;
 import org.wso2.carbon.apimgt.rest.api.publisher.v1.common.mappings.PublisherCommonUtils;
@@ -29,6 +30,7 @@ import java.sql.SQLException;
 
 public class V400Validator extends Validator {
     private static final Log log = LogFactory.getLog(V400Validator.class);
+    private final String saveSwagger = System.getProperty(Constants.preValidationService.SAVE_INVALID_DEFINITION);
 
     public V400Validator(Utils utils) {
         super(utils);
@@ -69,34 +71,46 @@ public class V400Validator extends Validator {
     }
 
     public void validateOpenAPIDefinition() {
+        String apiDefinition = null;
         APIDefinitionValidationResponse validationResponse = null;
-        String apiDefinitionString = "";
         log.info("Validating open API definition of API {name: " + apiName + ", version: " +
                 apiVersion + ", provider: " + provider + "}");
         try {
-            apiDefinitionString = utils.getAPIDefinition(registry, apiName, apiVersion, provider, apiId);
-            validationResponse = OASParserUtil.validateAPIDefinition(apiDefinitionString, Boolean.TRUE);
+            apiDefinition = utils.getAPIDefinition(registry, apiName, apiVersion, provider, apiId);
+            if (apiDefinition != null) {
+                validationResponse = OASParserUtil.validateAPIDefinition(apiDefinition, Boolean.TRUE);
+            }
         } catch (APIManagementException e) {
             log.error("Error while validating open API definition for " + apiName + " version: " + apiVersion
                     + " type: " + apiType, e);
         }
         if (validationResponse != null && !validationResponse.isValid()) {
+            if (saveSwagger != null) {
+                utils.saveInvalidDefinition(apiId, apiDefinition);
+            }
             for (ErrorHandler error : validationResponse.getErrorItems()) {
                 log.error("OpenAPI Definition for API {name: " + apiName + ", version: " +
                         apiVersion + ", provider: " + provider + "}" + " is invalid. ErrorMessage: " +
                         error.getErrorMessage() + " ErrorDescription: " + error.getErrorDescription());
             }
+        } else if (apiDefinition == null) {
+            log.error("Error while validating open API definition for " + apiName + " version: " + apiVersion
+                    + " type: " + apiType + ". Swagger definition of the API is missing...");
         } else {
-            log.info("Successfully validated open API definition of " + apiName + " version: " + apiVersion
-                    + " type: " + apiType);
-        }
-
-        APIDefinition apiDefinition = validationResponse.getParser();
-        try {
-            apiDefinition.getURITemplates(apiDefinitionString);
-        } catch (APIManagementException e) {
-            log.error("Error while retrieving URI Templates for " + apiName + " version: " + apiVersion
-                    + " type: " + apiType, e);
+            APIDefinition parser = validationResponse.getParser();
+            try {
+                if (parser != null) {
+                    parser.getURITemplates(apiDefinition);
+                }
+                log.info("Successfully validated open API definition of " + apiName + " version: " + apiVersion
+                        + " type: " + apiType);
+            } catch (APIManagementException e) {
+                if (saveSwagger != null) {
+                    utils.saveInvalidDefinition(apiId, apiDefinition);
+                }
+                log.error("Error while retrieving URI Templates for " + apiName + " version: " + apiVersion
+                        + " type: " + apiType, e);
+            }
         }
     }
 
