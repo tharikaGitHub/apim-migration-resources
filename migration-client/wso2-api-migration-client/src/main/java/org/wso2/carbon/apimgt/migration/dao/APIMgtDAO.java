@@ -25,6 +25,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.apimgt.api.APIManagementException;
+import org.wso2.carbon.apimgt.api.model.APIRevision;
 import org.wso2.carbon.apimgt.api.model.VHost;
 import org.wso2.carbon.apimgt.impl.dao.constants.SQLConstants;
 import org.wso2.carbon.apimgt.impl.utils.APIMgtDBUtil;
@@ -198,6 +199,9 @@ public class APIMgtDAO {
     private static final String ADD_KEY_MANAGER =
             " INSERT INTO AM_KEY_MANAGER (UUID,NAME,DESCRIPTION,TYPE,CONFIGURATION,TENANT_DOMAIN,ENABLED," +
                     "DISPLAY_NAME) VALUES (?,?,?,?,?,?,?,?)";
+
+    private static final String GET_REVISION_APIID_BY_REVISION_UUID = "SELECT API_UUID, ID FROM AM_REVISION WHERE "
+            + "REVISION_UUID = ?";
 
     private APIMgtDAO() {
 
@@ -1225,5 +1229,32 @@ public class APIMgtDAO {
                     + tenantId + '(' + tenantDomain + ')', e);
         }
 
+    }
+
+    /**
+     * Get a provided api uuid is in the revision db table
+     *
+     * @return String apiUUID
+     * @throws APIMigrationException if an error occurs while checking revision table
+     */
+    public APIRevision checkAPIUUIDIsARevisionUUID(String apiUUID) throws APIMigrationException {
+
+        try (Connection connection = APIMgtDBUtil.getConnection();
+             PreparedStatement statement = connection.prepareStatement(GET_REVISION_APIID_BY_REVISION_UUID)) {
+            statement.setString(1, apiUUID);
+            try (ResultSet rs = statement.executeQuery()) {
+                if (rs.next()) {
+                    APIRevision apiRevision = new APIRevision();
+                    apiRevision.setApiUUID(rs.getString("API_UUID"));
+                    apiRevision.setId(rs.getInt("ID"));
+                    apiRevision.setRevisionUUID(apiUUID);
+                    return apiRevision;
+                }
+            }
+        } catch (SQLException e) {
+            throw new APIMigrationException("WSO2 API-M Migration Task : Failed to search UUID: " + apiUUID +
+                    " in the revision db table", e);
+        }
+        return null;
     }
 }

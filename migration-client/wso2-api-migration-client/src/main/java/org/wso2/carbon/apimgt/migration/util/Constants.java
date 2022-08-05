@@ -28,6 +28,7 @@ public class Constants {
     public static final String VERSION_1_10 = "1.10.0";
     public static final String VERSION_2_0_0 = "2.0.0";
     public static final String VERSION_2_1_0 = "2.1.0";
+    public static final String VERSION_2_6_0 = "2.6.0";
     public static final String LINE_BREAK = "\\n";
     public static final String CONSTRAINT = "constraint";
     public static final String ALTER = "alter";
@@ -43,7 +44,17 @@ public class Constants {
     public static final String GOVERNANCE_ARTIFACT_CONFIGURATION_PATH =
             RegistryConstants.GOVERNANCE_COMPONENT_PATH + "/configuration/";
 
+    public static class preValidationService {
+        public static final String API_DEFINITION_VALIDATION = "apiDefinitionValidation";
+        public static final String API_ENDPOINT_VALIDATION = "apiEndpointValidation";
+        public static final String API_AVAILABILITY_VALIDATION = "apiAvailabilityValidation";
+    }
+
+    public static final String API_OVERVIEW_WSDL = "overview_wsdl";
+    public static final String API_TYPE_SOAP = "SOAP";
+
     // Migration client argument property names
+    public static final String ARG_PRE_MIGRATION = "runPreMigration";
     public static final String ARG_RUN_SPECIFIC_VERSION = "runSpecificVersion";
     public static final String ARG_MIGRATE_FROM_VERSION = "migrateFromVersion";
     public static final String ARG_OPTIONS = "options";
