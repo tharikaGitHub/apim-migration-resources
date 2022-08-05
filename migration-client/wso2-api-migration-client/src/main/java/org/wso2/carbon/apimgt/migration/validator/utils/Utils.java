@@ -146,7 +146,7 @@ public abstract class Utils {
         try (FileOutputStream outStream = new FileOutputStream(fileName)) {
             byte[] definitionBytes = apiDefinition.getBytes();
             outStream.write(definitionBytes);
-            log.info("Invalid definition saved successfully to " + dirName + File.separator + apiId + ".json");
+            log.info("Invalid definition saved successfully to " + fileName);
         } catch (IOException e) {
             log.error("Error while saving the invalid swagger definition to the file: " + fileName, e);
         }
