@@ -12,7 +12,10 @@ import org.wso2.carbon.registry.core.RegistryConstants;
 import org.wso2.carbon.registry.core.Resource;
 import org.wso2.carbon.registry.core.exceptions.RegistryException;
 import org.wso2.carbon.registry.core.session.UserRegistry;
+import org.wso2.carbon.utils.CarbonUtils;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
 
@@ -131,5 +134,21 @@ public abstract class Utils {
 
     public String getMigrateFromVersion() {
         return migrateFromVersion;
+    }
+
+    public void saveInvalidDefinition(String apiId, String apiDefinition) {
+        String dirName = CarbonUtils.getCarbonHome() + File.separator + "migration-resources" + File.separator + "definitions";
+        String fileName = dirName + File.separator + apiId + ".json";
+        File directory = new File(dirName);
+        if (!directory.exists()) {
+            directory.mkdir();
+        }
+        try (FileOutputStream outStream = new FileOutputStream(fileName)) {
+            byte[] definitionBytes = apiDefinition.getBytes();
+            outStream.write(definitionBytes);
+            log.info("Invalid definition saved successfully to " + apiId + ".json");
+        } catch (IOException e) {
+            log.error("Error while saving the invalid swagger definition to the file: " + fileName, e);
+        }
     }
 }
