@@ -51,9 +51,6 @@ public class Constants {
         public static final String SAVE_INVALID_DEFINITION = "saveInvalidDefinition";
     }
 
-    public static final String API_OVERVIEW_WSDL = "overview_wsdl";
-    public static final String API_TYPE_SOAP = "SOAP";
-
     // Migration client argument property names
     public static final String ARG_PRE_MIGRATION = "runPreMigration";
     public static final String ARG_RUN_SPECIFIC_VERSION = "runSpecificVersion";
