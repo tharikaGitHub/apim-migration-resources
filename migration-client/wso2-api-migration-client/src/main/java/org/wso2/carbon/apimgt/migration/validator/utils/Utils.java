@@ -137,7 +137,7 @@ public abstract class Utils {
     }
 
     public void saveInvalidDefinition(String apiId, String apiDefinition) {
-        String dirName = CarbonUtils.getCarbonHome() + File.separator + "migration-resources" + File.separator + "definitions";
+        String dirName = CarbonUtils.getCarbonHome() + File.separator + "invalid-swagger-definitions";
         String fileName = dirName + File.separator + apiId + ".json";
         File directory = new File(dirName);
         if (!directory.exists()) {
