@@ -2,10 +2,10 @@ package org.wso2.carbon.apimgt.migration.validator.validators;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.wso2.carbon.apimgt.api.APIDefinition;
 import org.wso2.carbon.apimgt.api.APIDefinitionValidationResponse;
 import org.wso2.carbon.apimgt.api.APIManagementException;
 import org.wso2.carbon.apimgt.api.ErrorHandler;
-import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.apimgt.impl.APIConstants;
 import org.wso2.carbon.apimgt.impl.definitions.AsyncApiParserUtil;
 import org.wso2.carbon.apimgt.impl.definitions.OASParserUtil;
@@ -96,8 +96,20 @@ public class V410Validator extends Validator {
             log.error("Error while validating open API definition for " + apiName + " version: " + apiVersion
                     + " type: " + apiType + ". Swagger definition of the API is missing...");
         } else {
-            log.info("Successfully validated open API definition of " + apiName + " version: " + apiVersion
-                    + " type: " + apiType);
+            APIDefinition parser = validationResponse.getParser();
+            try {
+                if (parser != null) {
+                    parser.getURITemplates(apiDefinition);
+                }
+                log.info("Successfully validated open API definition of " + apiName + " version: " + apiVersion
+                        + " type: " + apiType);
+            } catch (APIManagementException e) {
+                if (saveSwagger != null) {
+                    utils.saveInvalidDefinition(apiId, apiDefinition);
+                }
+                log.error("Error while retrieving URI Templates for " + apiName + " version: " + apiVersion
+                        + " type: " + apiType, e);
+            }
         }
     }
 
