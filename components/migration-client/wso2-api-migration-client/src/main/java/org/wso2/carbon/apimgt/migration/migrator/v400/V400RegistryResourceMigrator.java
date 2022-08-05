@@ -220,7 +220,7 @@ public class V400RegistryResourceMigrator extends RegistryResourceMigrator {
             List<Tenant> tenants = APIUtil.getAllTenantsWithSuperTenant();
             for (Tenant tenant : tenants) {
                 log.info("WSO2 API-M Migration Task : Updating Registry paths of API icons and WSDLs of "
-                        + "tenant " + + tenant.getId() + '(' +
+                        + "tenant " + tenant.getId() + '(' +
                         tenant.getDomain() + ')');
                 List<APIInfoDTO> apiInfoDTOList = new ArrayList<>();
                 int apiTenantId = tenantManager.getTenantId(tenant.getDomain());
@@ -246,7 +246,7 @@ public class V400RegistryResourceMigrator extends RegistryResourceMigrator {
                             }
                         }
                         for (APIInfoDTO apiInfoDTO : apiInfoDTOList) {
-                            String apiId = apiInfoDTO.getApiProvider() + "-" +apiInfoDTO.getApiName() + "-" +
+                            String apiId = apiInfoDTO.getApiProvider() + "-" + apiInfoDTO.getApiName() + "-" +
                                     apiInfoDTO.getApiVersion();
                             String apiPath = GovernanceUtils.getArtifactPath(registry, apiInfoDTO.getUuid());
                             int prependIndex = apiPath.lastIndexOf("/api");
@@ -274,8 +274,18 @@ public class V400RegistryResourceMigrator extends RegistryResourceMigrator {
                                     APIConstants.API_WSDL_RESOURCE_LOCATION + RegistryPersistenceUtil
                                             .createWsdlFileName(apiInfoDTO.getApiProvider(), apiInfoDTO.getApiName(),
                                                     apiInfoDTO.getApiVersion());
+                            APIIdentifier identifier = new APIIdentifier(apiInfoDTO.getApiProvider(),
+                                    apiInfoDTO.getApiName(), apiInfoDTO.getApiVersion());
+                            String wsdlResourceArchivePathOld = RegistryPersistenceUtil.getWsdlArchivePath(identifier);
+                            String resourcePath = null;
                             if (registry.resourceExists(wsdlResourcePathOld)) {
-                                Resource resource = registry.get(wsdlResourcePathOld);
+                                resourcePath = wsdlResourcePathOld;
+                            } else if (registry.resourceExists(wsdlResourceArchivePathOld)) {
+                                resourcePath = wsdlResourceArchivePathOld;
+                            }
+                            if (resourcePath != null) {
+                                log.info("WSDL resource path: " + resourcePath);
+                                Resource resource = registry.get(resourcePath);
                                 String wsdlResourcePath;
                                 String wsdlResourcePathArchive = artifactPath + RegistryConstants.PATH_SEPARATOR
                                         + APIConstants.API_WSDL_ARCHIVE_LOCATION + apiInfoDTO.getApiProvider()
@@ -290,7 +300,7 @@ public class V400RegistryResourceMigrator extends RegistryResourceMigrator {
                                 } else {
                                     wsdlResourcePath = wsdlResourcePathFile;
                                 }
-                                registry.copy(wsdlResourcePathOld, wsdlResourcePath);
+                                registry.copy(resourcePath, wsdlResourcePath);
                                 GenericArtifact apiArtifact = tenantArtifactManager
                                         .getGenericArtifact(apiInfoDTO.getUuid());
                                 String absoluteWSDLResourcePath = RegistryUtils
