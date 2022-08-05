@@ -594,7 +594,6 @@ public class MigrateFrom320 extends MigrationClientBase implements MigrationClie
     public void removeUnnecessaryFaultHandlers() {
         try {
             List<Tenant> tenants = APIUtil.getAllTenantsWithSuperTenant();
-            tenants.removeIf(t -> (!t.isActive()));
             for (Tenant tenant : tenants) {
                 int apiTenantId = tenantManager.getTenantId(tenant.getDomain());
                 APIUtil.loadTenantRegistry(apiTenantId);
