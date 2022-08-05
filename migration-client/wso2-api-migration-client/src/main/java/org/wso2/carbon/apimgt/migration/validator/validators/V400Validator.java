@@ -2,6 +2,7 @@ package org.wso2.carbon.apimgt.migration.validator.validators;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.wso2.carbon.apimgt.api.APIDefinition;
 import org.wso2.carbon.apimgt.api.APIDefinitionValidationResponse;
 import org.wso2.carbon.apimgt.api.APIManagementException;
 import org.wso2.carbon.apimgt.api.ErrorHandler;
@@ -69,11 +70,12 @@ public class V400Validator extends Validator {
 
     public void validateOpenAPIDefinition() {
         APIDefinitionValidationResponse validationResponse = null;
+        String apiDefinitionString = "";
         log.info("Validating open API definition of API {name: " + apiName + ", version: " +
                 apiVersion + ", provider: " + provider + "}");
         try {
-            String apiDefinition = utils.getAPIDefinition(registry, apiName, apiVersion, provider, apiId);
-            validationResponse = OASParserUtil.validateAPIDefinition(apiDefinition, Boolean.TRUE);
+            apiDefinitionString = utils.getAPIDefinition(registry, apiName, apiVersion, provider, apiId);
+            validationResponse = OASParserUtil.validateAPIDefinition(apiDefinitionString, Boolean.TRUE);
         } catch (APIManagementException e) {
             log.error("Error while validating open API definition for " + apiName + " version: " + apiVersion
                     + " type: " + apiType, e);
@@ -87,6 +89,14 @@ public class V400Validator extends Validator {
         } else {
             log.info("Successfully validated open API definition of " + apiName + " version: " + apiVersion
                     + " type: " + apiType);
+        }
+
+        APIDefinition apiDefinition = validationResponse.getParser();
+        try {
+            apiDefinition.getURITemplates(apiDefinitionString);
+        } catch (APIManagementException e) {
+            log.error("Error while retrieving URI Templates for " + apiName + " version: " + apiVersion
+                    + " type: " + apiType, e);
         }
     }
 
