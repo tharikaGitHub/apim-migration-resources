@@ -243,6 +243,9 @@ public class MigrateFrom320 extends MigrationClientBase implements MigrationClie
                         if (registry.resourceExists(wsdlResourcePathOld)) {
                             resourcePath = wsdlResourcePathOld;
                         } else if (registry.resourceExists(wsdlResourceArchivePathOld)) {
+                            log.info("WSDL resource is a zip archive for API Name: " + apiInfoDTO.getApiName() +
+                                    " Version: " + apiInfoDTO.getApiVersion() + " Provider: " +
+                                    apiInfoDTO.getApiProvider());
                             resourcePath = wsdlResourceArchivePathOld;
                         }
                         if (resourcePath != null) {
