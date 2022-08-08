@@ -101,7 +101,7 @@ public class V410Validator extends Validator {
                 if (parser != null) {
                     parser.getURITemplates(apiDefinition);
                 }
-                log.info("Successfully validated the open API definition of the API " + apiName + " version: " + apiVersion
+                log.info("Successfully validated open API definition of " + apiName + " version: " + apiVersion
                         + " type: " + apiType);
             } catch (APIManagementException e) {
                 if (saveSwagger != null) {
