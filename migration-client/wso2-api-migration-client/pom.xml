@@ -44,6 +44,12 @@
         </repository>
     </repositories>
 
+    <scm>
+        <connection>scm:svn:https://none</connection>
+        <url>scm:svn:https://none</url>
+        <tag>HEAD</tag>
+    </scm>
+
     <build>
         <plugins>
             <plugin>
