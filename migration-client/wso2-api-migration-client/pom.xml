@@ -45,7 +45,7 @@
     </repositories>
 
     <scm>
-        <connection>scm:svn:https://none</connection>
+        <connection>scm:svn:http://none</connection>
         <url>scm:svn:https://none</url>
         <tag>HEAD</tag>
     </scm>
