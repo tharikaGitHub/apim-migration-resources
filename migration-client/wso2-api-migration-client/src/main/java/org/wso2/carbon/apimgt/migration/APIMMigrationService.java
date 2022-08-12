@@ -424,6 +424,5 @@ public class APIMMigrationService implements ServerStartupObserver {
         } finally {
             MigrationClientFactory.clearFactory();
         }
-        log.info("WSO2 API-M Migration Task : WSO2 API Manager migration component successfully activated.");
     }
 }
