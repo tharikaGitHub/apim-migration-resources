@@ -9,6 +9,13 @@
     <version>4.0.0.1-SNAPSHOT</version>
     <packaging>bundle</packaging>
 
+    <scm>
+        <url>https://github.com/wso2-extensions/apim-migration-resources.git</url>
+        <developerConnection>scm:git:https://github.com/wso2-extensions/apim-migration-resources.git</developerConnection>
+        <connection>scm:git:https://github.com/wso2-extensions/apim-migration-resources.git</connection>
+        <tag>HEAD</tag>
+    </scm>
+
     <repositories>
         <repository>
             <id>wso2-nexus</id>
