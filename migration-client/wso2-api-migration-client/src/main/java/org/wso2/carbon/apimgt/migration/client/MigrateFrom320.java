@@ -123,12 +123,14 @@ public class MigrateFrom320 extends MigrationClientBase implements MigrationClie
     protected Registry registry;
     private TenantManager tenantManager;
     APIMgtDAO apiMgtDAO = APIMgtDAO.getInstance();
+    private List<Tenant> tenants;
 
     public MigrateFrom320(String tenantArguments, String blackListTenantArguments, String tenantRange,
                           RegistryService registryService, TenantManager tenantManager) throws UserStoreException {
         super(tenantArguments, blackListTenantArguments, tenantRange, tenantManager);
         this.registryService = registryService;
         this.tenantManager = tenantManager;
+        this.tenants = APIUtil.getAllTenantsWithSuperTenant();
     }
 
     @Override
@@ -286,26 +288,53 @@ public class MigrateFrom320 extends MigrationClientBase implements MigrationClie
     }
 
     public void apiRevisionRelatedMigration() throws APIMigrationException {
-        try {
-            List<Tenant> tenants = APIUtil.getAllTenantsWithSuperTenant();
-            for (Tenant tenant : tenants) {
-                log.info("WSO2 API-M Migration Task : Starting API Revision related migration for tenant " +
-                        tenant.getId() + '(' + tenant.getDomain() + ')');
+        boolean isError = false;
+        for (Tenant tenant : tenants) {
+            try {
+                GenericArtifactManager tenantArtifactManager;
+                GenericArtifact[] tenantArtifacts = null;
+                APIProvider apiProviderTenant = null;
+                List<Environment> dynamicEnvironments;
                 List<APIInfoDTO> apiInfoDTOList = new ArrayList<>();
-                List<Environment> dynamicEnvironments = ApiMgtDAO.getInstance()
-                        .getAllEnvironments(tenant.getDomain());
-                int apiTenantId = tenantManager.getTenantId(tenant.getDomain());
-                APIUtil.loadTenantRegistry(apiTenantId);
-                startTenantFlow(tenant.getDomain(), apiTenantId,
-                        MultitenantUtils.getTenantAwareUsername(APIUtil.getTenantAdminUserName(tenant.getDomain())));
-                this.registry = ServiceReferenceHolder.getInstance().getRegistryService().getGovernanceSystemRegistry(apiTenantId);
-                GenericArtifactManager tenantArtifactManager = APIUtil.getArtifactManager(this.registry,
-                        APIConstants.API_KEY);
-                if (tenantArtifactManager != null) {
-                    GenericArtifact[] tenantArtifacts = tenantArtifactManager.getAllGenericArtifacts();
-                    APIProvider apiProviderTenant = APIManagerFactory.getInstance().getAPIProvider(
-                            APIUtil.getTenantAdminUserName(tenant.getDomain()));
-                    for (GenericArtifact artifact : tenantArtifacts) {
+                try {
+                    log.info("WSO2 API-M Migration Task : Starting API Revision related migration for tenant " +
+                            tenant.getId() + '(' + tenant.getDomain() + ')');
+                    dynamicEnvironments = ApiMgtDAO.getInstance().getAllEnvironments(tenant.getDomain());
+                    APIUtil.loadTenantRegistry(tenant.getId());
+                    startTenantFlow(tenant.getDomain(), tenant.getId(),
+                            MultitenantUtils.getTenantAwareUsername(APIUtil.getTenantAdminUserName(tenant.getDomain())));
+                    Registry registry = ServiceReferenceHolder.getInstance().getRegistryService().
+                            getGovernanceSystemRegistry(tenant.getId());
+                    tenantArtifactManager = APIUtil.getArtifactManager(registry, APIConstants.API_KEY);
+                    if (tenantArtifactManager != null) {
+                        tenantArtifacts = tenantArtifactManager.getAllGenericArtifacts();
+                        apiProviderTenant = APIManagerFactory.getInstance().getAPIProvider(
+                                APIUtil.getTenantAdminUserName(tenant.getDomain()));
+                    }
+                    //On exceptions in this stage, log the error with tenant details and continue for remaining tenants
+                } catch (GovernanceException e) {
+                    log.error("WSO2 API-M Migration Task : Error while initializing the registry " + tenant.getId() +
+                            '(' + tenant.getDomain() + ')', e);
+                    isError = true;
+                    continue;
+                } catch (RegistryException e) {
+                    log.error("WSO2 API-M Migration Task : Error while initializing the registry " + tenant.getId() +
+                            '(' + tenant.getDomain() + ')', e);
+                    isError = true;
+                    continue;
+                } catch (APIManagementException e) {
+                    log.error("WSO2 API-M Migration Task : Generic API Management Exception while performing revision " +
+                            "migration for " + tenant.getId() + '(' + tenant.getDomain() + ')', e);
+                    isError = true;
+                    continue;
+                }
+
+                for (GenericArtifact artifact : tenantArtifacts) {
+                    String identifier = "";
+                    try {
+                        identifier = artifact.getAttribute(APIConstants.API_OVERVIEW_PROVIDER) + "-" +
+                                artifact.getAttribute(APIConstants.API_OVERVIEW_NAME) + "-" +
+                                artifact.getAttribute(APIConstants.API_OVERVIEW_VERSION);
                         if (!StringUtils.equalsIgnoreCase(artifact.getAttribute(APIConstants.API_OVERVIEW_STATUS),
                                 org.wso2.carbon.apimgt.impl.APIConstants.CREATED) &&
                                 !StringUtils.equalsIgnoreCase(artifact.getAttribute(APIConstants.API_OVERVIEW_STATUS),
@@ -316,7 +345,8 @@ public class MigrateFrom320 extends MigrationClientBase implements MigrationClie
                                 if (api != null) {
                                     APIInfoDTO apiInfoDTO = new APIInfoDTO();
                                     apiInfoDTO.setUuid(api.getUUID());
-                                    apiInfoDTO.setApiProvider(APIUtil.replaceEmailDomainBack(api.getId().getProviderName()));
+                                    apiInfoDTO.setApiProvider(APIUtil.replaceEmailDomainBack(api.getId().
+                                            getProviderName()));
                                     apiInfoDTO.setApiName(api.getId().getApiName());
                                     apiInfoDTO.setApiVersion(api.getId().getVersion());
                                     apiInfoDTO.setType(api.getType());
@@ -327,7 +357,8 @@ public class MigrateFrom320 extends MigrationClientBase implements MigrationClie
                                 if (apiProduct != null) {
                                     APIInfoDTO apiInfoDTO = new APIInfoDTO();
                                     apiInfoDTO.setUuid(apiProduct.getUuid());
-                                    apiInfoDTO.setApiProvider(APIUtil.replaceEmailDomainBack(apiProduct.getId().getProviderName()));
+                                    apiInfoDTO.setApiProvider(APIUtil.replaceEmailDomainBack(apiProduct.getId().
+                                            getProviderName()));
                                     apiInfoDTO.setApiName(apiProduct.getId().getName());
                                     apiInfoDTO.setApiVersion(apiProduct.getId().getVersion());
                                     apiInfoDTO.setType(apiProduct.getType());
@@ -335,17 +366,39 @@ public class MigrateFrom320 extends MigrationClientBase implements MigrationClie
                                 }
                             }
                         }
+                    } catch (GovernanceException e) {
+                        log.error("WSO2 API-M Migration Task : Error while fetching attributes from artifact: " +
+                                identifier, e);
+                        isError = true;
+                    } catch (APIManagementException e) {
+                        log.error("WSO2 API-M Migration Task : API Management Exception while getting API/API " +
+                                "Product from artifact: " + identifier, e);
+                        isError = true;
                     }
-                    for (APIInfoDTO apiInfoDTO : apiInfoDTOList) {
+                }
+
+                for (APIInfoDTO apiInfoDTO : apiInfoDTOList) {
+                    try {
                         //adding the revision
                         APIRevision apiRevision = new APIRevision();
                         apiRevision.setApiUUID(apiInfoDTO.getUuid());
                         apiRevision.setDescription("Initial revision created in migration process");
                         String revisionId;
-                        if (!StringUtils.equalsIgnoreCase(apiInfoDTO.getType(), APIConstants.API_PRODUCT)) {
-                            revisionId = apiProviderTenant.addAPIRevision(apiRevision, tenant.getDomain());
-                        } else {
-                            revisionId = apiProviderTenant.addAPIProductRevision(apiRevision);
+                        try {
+                            if (!StringUtils.equalsIgnoreCase(apiInfoDTO.getType(), APIConstants.API_PRODUCT)) {
+                                revisionId = apiProviderTenant.addAPIRevision(apiRevision, tenant.getDomain());
+                                log.info("WSO2 API-M Migration Task : Successfully created API Revision for " +
+                                        apiInfoDTO.getUuid());
+                            } else {
+                                revisionId = apiProviderTenant.addAPIProductRevision(apiRevision);
+                                log.info("WSO2 API-M Migration Task : Successfully created API Revision for " +
+                                        apiInfoDTO.getUuid());
+                            }
+                        } catch (APIManagementException e) {
+                            log.error("WSO2 API-M Migration Task : Error while adding API/API Product Revision for " +
+                                    apiInfoDTO.getUuid(), e);
+                            isError = true;
+                            continue;
                         }
                         // retrieve api artifacts
                         GenericArtifact apiArtifact = tenantArtifactManager.getGenericArtifact(apiInfoDTO.getUuid());
@@ -372,9 +425,15 @@ public class MigrateFrom320 extends MigrationClientBase implements MigrationClie
                                 }
                                 Optional<Environment> optionalEnv = dynamicEnvironments.stream()
                                         .filter(e -> StringUtils.equals(e.getName(), label)).findFirst();
-                                Environment dynamicEnv = optionalEnv.orElseThrow(() -> new APIMigrationException(
-                                        "Error while retrieving dynamic environment of the label: " + label
-                                ));
+                                Environment dynamicEnv = null;
+                                if (optionalEnv != null) {
+                                    dynamicEnv = optionalEnv.get();
+                                } else {
+                                    log.error("WSO2 API-M Migration Task : Error while retrieving dynamic " +
+                                            "environment of the label: " + label);
+                                    isError = true;
+                                    continue;
+                                }
                                 List<VHost> vhosts = dynamicEnv.getVhosts();
                                 if (vhosts.size() > 0) {
                                     APIRevisionDeployment apiRevisionDeployment = new APIRevisionDeployment();
@@ -384,34 +443,49 @@ public class MigrateFrom320 extends MigrationClientBase implements MigrationClie
                                     apiRevisionDeployment.setDisplayOnDevportal(true);
                                     apiRevisionDeployments.add(apiRevisionDeployment);
                                 } else {
-                                    throw new APIMigrationException("Vhosts are empty for the dynamic environment: "
-                                            + dynamicEnv.getName());
+                                    log.error("WSO2 API-M Migration Task : Vhosts are empty for the dynamic " +
+                                            "environment: " + dynamicEnv.getName());
+                                    isError = true;
                                 }
                             }
                         }
 
                         if (!apiRevisionDeployments.isEmpty()) {
-                            if (!StringUtils.equalsIgnoreCase(apiInfoDTO.getType(), APIConstants.API_PRODUCT)) {
-                                apiProviderTenant.deployAPIRevision(apiInfoDTO.getUuid(), revisionId,
-                                        apiRevisionDeployments);
-                            } else {
-                                apiProviderTenant.deployAPIProductRevision(apiInfoDTO.getUuid(), revisionId,
-                                        apiRevisionDeployments);
+                            try {
+                                if (!StringUtils.equalsIgnoreCase(apiInfoDTO.getType(), APIConstants.API_PRODUCT)) {
+                                    apiProviderTenant.deployAPIRevision(apiInfoDTO.getUuid(), revisionId,
+                                            apiRevisionDeployments);
+                                    log.info("WSO2 API-M Migration Task : Successfully deployed API Revision for " +
+                                            apiInfoDTO.getUuid());
+                                } else {
+                                    apiProviderTenant.deployAPIProductRevision(apiInfoDTO.getUuid(), revisionId,
+                                            apiRevisionDeployments);
+                                    log.info("WSO2 API-M Migration Task : Successfully deployed API Product Revision" +
+                                            " for " + apiInfoDTO.getUuid());
+                                }
+                            } catch (APIManagementException e) {
+                                log.error("WSO2 API-M Migration Task : Error while deploying API/API Product " +
+                                        "Revision for " + apiInfoDTO.getUuid(), e);
+                                isError = true;
                             }
                         }
+                    } catch (GovernanceException e) {
+                        log.error("WSO2 API-M Migration Task : Error while fetching registry artifact by UUID: " +
+                                apiInfoDTO.getUuid(), e);
+                        isError = true;
                     }
                 }
+            } finally {
+                PrivilegedCarbonContext.endTenantFlow();
             }
-        } catch (RegistryException e) {
-            log.error("WSO2 API-M Migration Task : Error while initializing the registry", e);
-        } catch (UserStoreException e){
-            log.error("WSO2 API-M Migration Task : Error while retrieving the tenants", e);
-        } catch (APIManagementException e) {
-            log.error("WSO2 API-M Migration Task : Error while Retrieving API artifact from the registry", e);
-        } finally {
-            PrivilegedCarbonContext.endTenantFlow();
         }
-        log.info("WSO2 API-M Migration Task : Completed API Revision related migration for all tenants");
+
+        if (isError) {
+            throw new APIMigrationException("WSO2 API-M Migration Task : Error/s occurred during Revision Related " +
+                    "Migration, hence could not create/deploy revisions for some artifacts");
+        } else {
+            log.info("WSO2 API-M Migration Task : Completed API Revision related migration for all tenants");
+        }
     }
 
     public void migrateProductMappingTable() throws APIMigrationException {
