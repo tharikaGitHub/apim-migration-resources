@@ -301,8 +301,7 @@ public class MigrateFrom320 extends MigrationClientBase implements MigrationClie
                             tenant.getId() + '(' + tenant.getDomain() + ')');
                     dynamicEnvironments = ApiMgtDAO.getInstance().getAllEnvironments(tenant.getDomain());
                     APIUtil.loadTenantRegistry(tenant.getId());
-                    startTenantFlow(tenant.getDomain(), tenant.getId(),
-                            MultitenantUtils.getTenantAwareUsername(APIUtil.getTenantAdminUserName(tenant.getDomain())));
+                    startTenantFlow(tenant.getDomain(), tenant.getId(), APIUtil.getTenantAdminUserName(tenant.getDomain()));
                     Registry registry = ServiceReferenceHolder.getInstance().getRegistryService().
                             getGovernanceSystemRegistry(tenant.getId());
                     tenantArtifactManager = APIUtil.getArtifactManager(registry, APIConstants.API_KEY);
