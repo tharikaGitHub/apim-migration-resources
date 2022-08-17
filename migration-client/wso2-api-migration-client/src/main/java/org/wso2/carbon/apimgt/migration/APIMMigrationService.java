@@ -182,13 +182,13 @@ public class APIMMigrationService implements ServerStartupObserver {
                     log.info("WSO2 API-M Migration Task : Successfully removed the unnecessary fault handlers from fault"
                             + " sequences");
 
-                    log.info("WSO2 API-M Migration Task : Start API Revision related migration");
-                    migrateFrom320.apiRevisionRelatedMigration();
-                    log.info("WSO2 API-M Migration Task : Successfully completed API Revision related migration");
-
                     log.info("WSO2 API-M Migration Task : Start migrating Endpoint Certificates");
                     migrateFrom320.migrateEndpointCertificates();
                     log.info("WSO2 API-M Migration Task : Successfully migrated Endpoint Certificates");
+
+                    log.info("WSO2 API-M Migration Task : Start API Revision related migration");
+                    migrateFrom320.apiRevisionRelatedMigration();
+                    log.info("WSO2 API-M Migration Task : Successfully completed API Revision related migration");
 
                     log.info("WSO2 API-M Migration Task : Start replacing KM name by UUID");
                     migrateFrom320.replaceKMNamebyUUID();
@@ -271,13 +271,13 @@ public class APIMMigrationService implements ServerStartupObserver {
                     migrateFrom320.removeUnnecessaryFaultHandlers();
                     log.info("WSO2 API-M Migration Task : Successfully removed the unnecessary fault handlers from fault sequences.");
 
-                    log.info("WSO2 API-M Migration Task : Start API Revision related migration");
-                    migrateFrom320.apiRevisionRelatedMigration();
-                    log.info("WSO2 API-M Migration Task : API Revision related migration is successful.");
-
                     log.info("WSO2 API-M Migration Task : Start migrating Endpoint Certificates");
                     migrateFrom320.migrateEndpointCertificates();
                     log.info("WSO2 API-M Migration Task : Successfully migrated Endpoint Certificates.");
+
+                    log.info("WSO2 API-M Migration Task : Start API Revision related migration");
+                    migrateFrom320.apiRevisionRelatedMigration();
+                    log.info("WSO2 API-M Migration Task : API Revision related migration is successful.");
 
                     log.info("WSO2 API-M Migration Task : Start replacing KM name by UUID");
                     migrateFrom320.replaceKMNamebyUUID();
@@ -342,13 +342,13 @@ public class APIMMigrationService implements ServerStartupObserver {
                     migrateFrom320.removeUnnecessaryFaultHandlers();
                     log.info("WSO2 API-M Migration Task : Successfully removed the unnecessary fault handlers from fault sequences.");
 
-                    log.info("WSO2 API-M Migration Task : Start API Revision related migration");
-                    migrateFrom320.apiRevisionRelatedMigration();
-                    log.info("WSO2 API-M Migration Task : Successfully done the API Revision related migration.");
-
                     log.info("WSO2 API-M Migration Task : Start migrating Endpoint Certificates");
                     migrateFrom320.migrateEndpointCertificates();
                     log.info("WSO2 API-M Migration Task : Successfully migrated Endpoint Certificates.");
+
+                    log.info("WSO2 API-M Migration Task : Start API Revision related migration");
+                    migrateFrom320.apiRevisionRelatedMigration();
+                    log.info("WSO2 API-M Migration Task : Successfully done the API Revision related migration.");
 
                     log.info("WSO2 API-M Migration Task : Start replacing KM name by UUID");
                     migrateFrom320.replaceKMNamebyUUID();
@@ -377,13 +377,13 @@ public class APIMMigrationService implements ServerStartupObserver {
                     migrateFrom320.removeUnnecessaryFaultHandlers();
                     log.info("WSO2 API-M Migration Task : Successfully removed the unnecessary fault handlers from fault sequences.");
 
-                    log.info("WSO2 API-M Migration Task : Start API Revision related migration");
-                    migrateFrom320.apiRevisionRelatedMigration();
-                    log.info("WSO2 API-M Migration Task : Successfully done the API Revision related migration.");
-
                     log.info("WSO2 API-M Migration Task : Start migrating Endpoint Certificates");
                     migrateFrom320.migrateEndpointCertificates();
                     log.info("WSO2 API-M Migration Task : Successfully migrated Endpoint Certificates.");
+
+                    log.info("WSO2 API-M Migration Task : Start API Revision related migration");
+                    migrateFrom320.apiRevisionRelatedMigration();
+                    log.info("WSO2 API-M Migration Task : Successfully done the API Revision related migration.");
 
                     log.info("WSO2 API-M Migration Task : Start replacing KM name by UUID");
                     migrateFrom320.replaceKMNamebyUUID();
