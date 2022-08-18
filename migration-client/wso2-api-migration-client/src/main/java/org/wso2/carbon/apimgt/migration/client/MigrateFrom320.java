@@ -236,9 +236,11 @@ public class MigrateFrom320 extends MigrationClientBase implements MigrationClie
                         startTenantFlow(tenant.getDomain(), apiTenantId,
                                 MultitenantUtils.getTenantAwareUsername(APIUtil.getTenantAdminUserName(tenant.getDomain())));
                         String wsdlResourcePathOld = APIConstants.API_WSDL_RESOURCE_LOCATION
-                                + RegistryPersistenceUtil.createWsdlFileName(apiInfoDTO.getApiProvider(),
+                                + RegistryPersistenceUtil.createWsdlFileName(
+                                        RegistryPersistenceUtil.replaceEmailDomain(apiInfoDTO.getApiProvider()),
                                 apiInfoDTO.getApiName(), apiInfoDTO.getApiVersion());
-                        APIIdentifier identifier = new APIIdentifier(apiInfoDTO.getApiProvider(),
+                        APIIdentifier identifier = new APIIdentifier(
+                                RegistryPersistenceUtil.replaceEmailDomain(apiInfoDTO.getApiProvider()),
                                 apiInfoDTO.getApiName(), apiInfoDTO.getApiVersion());
                         String wsdlResourceArchivePathOld = RegistryPersistenceUtil.getWsdlArchivePath(identifier);
                         String resourcePath = null;
@@ -252,14 +254,21 @@ public class MigrateFrom320 extends MigrationClientBase implements MigrationClie
                             Resource resource = registry.get(resourcePath);
                             String wsdlResourcePath;
                             String wsdlResourcePathArchive = artifactPath + RegistryConstants.PATH_SEPARATOR
-                                    + APIConstants.API_WSDL_ARCHIVE_LOCATION + apiInfoDTO.getApiProvider()
+                                    + APIConstants.API_WSDL_ARCHIVE_LOCATION
+                                    + RegistryPersistenceUtil.replaceEmailDomain(apiInfoDTO.getApiProvider())
                                     + APIConstants.WSDL_PROVIDER_SEPERATOR + apiInfoDTO.getApiName()
                                     + apiInfoDTO.getApiVersion() + APIConstants.ZIP_FILE_EXTENSION;
                             String wsdlResourcePathFile = artifactPath + RegistryConstants.PATH_SEPARATOR
-                                    + RegistryPersistenceUtil.createWsdlFileName(apiInfoDTO.getApiProvider(),
+                                    + RegistryPersistenceUtil.createWsdlFileName(
+                                            RegistryPersistenceUtil.replaceEmailDomain(apiInfoDTO.getApiProvider()),
                                     apiInfoDTO.getApiName(), apiInfoDTO.getApiVersion());
-                            if (APIConstants.APPLICATION_ZIP.equals(resource.getMediaType())) {
+                            if (resource.getPath() != null
+                                    && resource.getPath().endsWith(APIConstants.ZIP_FILE_EXTENSION)) {
                                 wsdlResourcePath = wsdlResourcePathArchive;
+                                if ("application/octet-stream".equals(resource.getMediaType())) {
+                                    resource.setMediaType(APIConstants.APPLICATION_ZIP);
+                                    registry.put(resourcePath, resource);
+                                }
                             } else {
                                 wsdlResourcePath = wsdlResourcePathFile;
                             }
