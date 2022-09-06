@@ -413,14 +413,19 @@ public class MigrateFrom320 extends MigrationClientBase implements MigrationClie
                         List<APIRevisionDeployment> apiRevisionDeployments = new ArrayList<>();
                         String environments = apiArtifact.getAttribute(APIConstants.API_OVERVIEW_ENVIRONMENTS);
                         String[] arrOfEnvironments = environments.split(",");
-                        for (String environment : arrOfEnvironments) {
-                            APIRevisionDeployment apiRevisionDeployment = new APIRevisionDeployment();
-                            apiRevisionDeployment.setRevisionUUID(revisionId);
-                            apiRevisionDeployment.setDeployment(environment);
-                            // Null VHost for the environments defined in deployment.toml (the default vhost)
-                            apiRevisionDeployment.setVhost(null);
-                            apiRevisionDeployment.setDisplayOnDevportal(true);
-                            apiRevisionDeployments.add(apiRevisionDeployment);
+                        if ("none".equals(environments)) {
+                            log.info("WSO2 API-M Migration Task : No gateway environments are configured for API " +
+                                    apiInfoDTO.getUuid() + ". Hence revision deployment is skipped.");
+                        } else {
+                            for (String environment : arrOfEnvironments) {
+                                APIRevisionDeployment apiRevisionDeployment = new APIRevisionDeployment();
+                                apiRevisionDeployment.setRevisionUUID(revisionId);
+                                apiRevisionDeployment.setDeployment(environment);
+                                // Null VHost for the environments defined in deployment.toml (the default vhost)
+                                apiRevisionDeployment.setVhost(null);
+                                apiRevisionDeployment.setDisplayOnDevportal(true);
+                                apiRevisionDeployments.add(apiRevisionDeployment);
+                            }
                         }
 
                         String[] labels = apiArtifact.getAttributes(APIConstants.API_LABELS_GATEWAY_LABELS);
