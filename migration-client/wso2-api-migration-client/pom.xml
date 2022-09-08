@@ -6,13 +6,12 @@
 
     <groupId>org.wso2.carbon</groupId>
     <artifactId>org.wso2.carbon.apimgt.migrate.client</artifactId>
-    <version>4.0.0.1-SNAPSHOT</version>
+    <version>4.0.0-${buildNumber}</version>
     <packaging>bundle</packaging>
 
     <scm>
-        <url>https://github.com/wso2-extensions/apim-migration-resources.git</url>
-        <developerConnection>scm:git:https://github.com/wso2-extensions/apim-migration-resources.git</developerConnection>
-        <connection>scm:git:https://github.com/wso2-extensions/apim-migration-resources.git</connection>
+        <connection>scm:svn:http://none</connection>
+        <url>scm:svn:https://none</url>
         <tag>HEAD</tag>
     </scm>
 
@@ -116,6 +115,41 @@
                 </executions>
             </plugin>
             <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>buildnumber-maven-plugin</artifactId>
+                <version>1.4</version>
+                <executions>
+                    <execution>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>create</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <format>{0,number}</format>
+                    <items>
+                        <item>buildNumber</item>
+                    </items>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.1</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                        </manifest>
+                        <manifestEntries>
+                            <Implementation-Build>${buildNumber}</Implementation-Build>
+                            <Build-Time>${maven.build.timestamp}</Build-Time>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+            <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-surefire-plugin</artifactId>
             <version>2.18.1</version>
@@ -183,5 +217,6 @@
         <carbon.apimgt.version>9.0.174</carbon.apimgt.version>
         <carbon.governance.version>4.8.19</carbon.governance.version>
         <carbon.kernel.version>4.6.1</carbon.kernel.version>
+        <maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss</maven.build.timestamp.format>
     </properties>
 </project>
