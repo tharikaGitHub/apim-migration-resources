@@ -12,7 +12,6 @@
     <scm>
         <connection>scm:svn:http://none</connection>
         <url>scm:svn:https://none</url>
-        <tag>HEAD</tag>
     </scm>
 
     <repositories>
