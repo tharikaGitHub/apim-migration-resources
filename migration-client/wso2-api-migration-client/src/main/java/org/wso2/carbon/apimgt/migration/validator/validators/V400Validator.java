@@ -6,9 +6,11 @@ import org.wso2.carbon.apimgt.api.APIDefinition;
 import org.wso2.carbon.apimgt.api.APIDefinitionValidationResponse;
 import org.wso2.carbon.apimgt.api.APIManagementException;
 import org.wso2.carbon.apimgt.api.ErrorHandler;
+import org.wso2.carbon.apimgt.api.model.URITemplate;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.apimgt.api.model.ResourceFile;
 import org.wso2.carbon.apimgt.impl.APIConstants;
+import org.wso2.carbon.apimgt.impl.APIConstants.OASResourceAuthTypes;
 import org.wso2.carbon.apimgt.impl.definitions.AsyncApiParserUtil;
 import org.wso2.carbon.apimgt.impl.definitions.OASParserUtil;
 import org.wso2.carbon.apimgt.impl.utils.APIMWSDLReader;
@@ -27,6 +29,8 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.sql.SQLException;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 public class V400Validator extends Validator {
     private static final Log log = LogFactory.getLog(V400Validator.class);
@@ -124,7 +128,7 @@ public class V400Validator extends Validator {
                     .validateGraphQLSchema("schema.graphql", graphqlSchema);
         } catch (APIManagementException e) {
             log.error(" Error while validating graphql api definition for API:" + apiName
-                    + " version: " +    apiVersion + " " + e);
+                    + " version: " + apiVersion + " " + e);
         }
         if (graphQLValidationResponseDTO != null && !graphQLValidationResponseDTO.isIsValid()) {
             log.error(" Invalid GraphQL definition found. " + "ErrorMessage: " + graphQLValidationResponseDTO
@@ -209,6 +213,34 @@ public class V400Validator extends Validator {
         } else {
             log.info("API " + apiName + " version: " + apiVersion + " type: " + apiType + " was not validated "
                     + "since the AsyncAPI definitions are supported after API Manager 4.0.0");
+        }
+    }
+
+    @Override
+    public void validateApiResourceLevelAuthScheme() {
+
+        Pattern pattern = Pattern.compile("2\\.\\d\\.\\d");
+
+        if (pattern.matcher(utils.getMigrateFromVersion()).matches()) {
+            log.info("Validating Resource Level Auth Scheme of API {name: " + apiName + ", version: " + apiVersion
+                    + ", provider: " + provider + "}");
+            try {
+                int id = ApiMgtDAO.getInstance().getAPIID(provider, apiName, apiVersion);
+                Set<URITemplate> uriTemplates = ApiMgtDAO.getInstance().getURITemplatesByAPIID(id);
+                for (URITemplate uriTemplate : uriTemplates) {
+                    if (!(OASResourceAuthTypes.APPLICATION_OR_APPLICATION_USER.equals(uriTemplate.getAuthType())
+                            || OASResourceAuthTypes.NONE.equals(uriTemplate.getAuthType())
+                            || "Any".equals(uriTemplate.getAuthType()))) {
+                        log.warn("Resource level Authentication Schemes 'Application', 'Application User' are not " +
+                                "supported, Resource {HTTP verb: " + uriTemplate.getHTTPVerb() + ", URL pattern: " +
+                                uriTemplate.getUriTemplate() + ", Auth Scheme: " + uriTemplate.getAuthType() + "}");
+                    }
+                }
+            } catch (SQLException e) {
+                log.error("Error on Retrieving URITemplates for apiResourceLevelAuthSchemeValidation", e);
+            }
+            log.info("Completed Validating Resource Level Auth Scheme of API {name: " + apiName + ", version: "
+                    + apiVersion + ", provider: " + provider + "}");
         }
     }
 }

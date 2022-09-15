@@ -48,6 +48,7 @@ public class Constants {
         public static final String API_DEFINITION_VALIDATION = "apiDefinitionValidation";
         public static final String API_ENDPOINT_VALIDATION = "apiEndpointValidation";
         public static final String API_AVAILABILITY_VALIDATION = "apiAvailabilityValidation";
+        public static final String API_RESOURCE_LEVEL_AUTH_SCHEME_VALIDATION = "apiResourceLevelAuthSchemeValidation";
         public static final String SAVE_INVALID_DEFINITION = "saveInvalidDefinition";
     }
 

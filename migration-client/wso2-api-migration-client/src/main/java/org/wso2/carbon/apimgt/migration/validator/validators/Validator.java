@@ -50,6 +50,8 @@ public abstract class Validator {
             validateAPIDefinition();
         } else if (Constants.preValidationService.API_AVAILABILITY_VALIDATION.equals(preMigrationStep)) {
             validateApiAvailability();
+        } else if (Constants.preValidationService.API_RESOURCE_LEVEL_AUTH_SCHEME_VALIDATION.equals(preMigrationStep)) {
+            validateApiResourceLevelAuthScheme();
         }
     }
 
@@ -58,4 +60,6 @@ public abstract class Validator {
     public abstract void validateAPIDefinition();
 
     public abstract void validateApiAvailability();
+
+    public abstract void validateApiResourceLevelAuthScheme();
 }

@@ -35,8 +35,11 @@ public class ValidationHandler {
     private String tenantRangeArgs;
     private final String migratedVersion = "4.0.0";
     private String blackListTenantArguments = System.getProperty(Constants.ARG_MIGRATE_BLACKLIST_TENANTS);
-    private final String[] validatorList = {Constants.preValidationService.API_AVAILABILITY_VALIDATION,
-            Constants.preValidationService.API_DEFINITION_VALIDATION};
+    private final String[] validatorList = {
+            Constants.preValidationService.API_AVAILABILITY_VALIDATION,
+            Constants.preValidationService.API_DEFINITION_VALIDATION,
+            Constants.preValidationService.API_RESOURCE_LEVEL_AUTH_SCHEME_VALIDATION,
+    };
     private final Validator validator;
 
     public ValidationHandler(String migrateFromVersion, String preMigrationStep,
