@@ -20,10 +20,13 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.wso2.carbon.apimgt.api.APIManagementException;
+import org.wso2.carbon.apimgt.impl.internal.ServiceReferenceHolder;
 import org.wso2.carbon.apimgt.impl.utils.APIMgtDBUtil;
 import org.wso2.carbon.apimgt.migration.APIMigrationException;
 import org.wso2.carbon.apimgt.migration.util.Constants;
 import org.wso2.carbon.apimgt.migration.util.RegistryService;
+import org.wso2.carbon.apimgt.migration.util.TenantUtil;
 import org.wso2.carbon.governance.api.exception.GovernanceException;
 import org.wso2.carbon.governance.api.generic.dataobjects.GenericArtifact;
 import org.wso2.carbon.registry.core.exceptions.RegistryException;
@@ -49,7 +52,7 @@ public abstract class MigrationClientBase {
     private  static final String NO_ZERO_DATE_MODE = "NO_ZERO_DATE";
 
     public MigrationClientBase(String tenantArguments, String blackListTenantArguments, String tenantRange,
-            TenantManager tenantManager) throws UserStoreException {
+            TenantManager tenantManager) throws UserStoreException, APIManagementException {
         if (tenantArguments != null) {  // Tenant arguments have been provided so need to load specific ones
             tenantArguments = tenantArguments.replaceAll("\\s", ""); // Remove spaces and tabs
 
@@ -159,15 +162,19 @@ public abstract class MigrationClientBase {
         }
     }
 
-    private void setAdminUserName(TenantManager tenantManager) throws UserStoreException {
-        log.debug("Setting tenant admin names");
+    private void setAdminUserName(TenantManager tenantManager) throws UserStoreException, APIManagementException {
 
         for (int i = 0; i < tenantsArray.size(); ++i) {
             Tenant tenant = tenantsArray.get(i);
             if (tenant.getId() == MultitenantConstants.SUPER_TENANT_ID) {
-                tenant.setAdminName("admin");
-            }
-            else {
+                String tenantDomain = ServiceReferenceHolder.getInstance().getRealmService().getTenantManager().
+                        getSuperTenantDomain();
+                String adminName = TenantUtil.getTenantAdminUserName(tenantDomain);
+                log.info("Setting super tenant: " + tenantDomain + " and admin name: " + adminName
+                        + " to base tenant array.");
+                tenant.setAdminName(adminName);
+            } else {
+                log.info("Setting tenant: " + tenant.getId() + " to base tenant array.");
                 tenantsArray.set(i, tenantManager.getTenant(tenant.getId()));
             }
         }
@@ -534,11 +541,9 @@ public abstract class MigrationClientBase {
         String rxtDir = CarbonUtils.getCarbonHome() + File.separator + "migration-resources" + File.separator + "rxts"
                 + File.separator + rxtName;
 
-
         for (Tenant tenant : getTenantsArray()) {
             try {
                 registryService.startTenantFlow(tenant);
-
                 log.info("WSO2 API-M Migration Task : Updating api.rxt for tenant " + tenant.getId() + '('
                         + tenant.getDomain() + ')');
                 //Update api.rxt file
@@ -549,10 +554,7 @@ public abstract class MigrationClientBase {
             } catch (IOException e) {
                 log.error("Error when reading api.rxt from " + rxtDir + " for tenant " + tenant.getId() + '('
                         + tenant.getDomain() + ')', e);
-            } catch (RegistryException e) {
-                log.error("Error while updating api.rxt in the registry for tenant " + tenant.getId() + '('
-                        + tenant.getDomain() + ')', e);
-            } catch (UserStoreException e) {
+            } catch (RegistryException | UserStoreException e) {
                 log.error("Error while updating api.rxt in the registry for tenant " + tenant.getId() + '('
                         + tenant.getDomain() + ')', e);
             } finally {
