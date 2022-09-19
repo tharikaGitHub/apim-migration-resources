@@ -18,6 +18,7 @@ package org.wso2.carbon.apimgt.migration.client;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.wso2.carbon.apimgt.api.APIManagementException;
 import org.wso2.carbon.apimgt.migration.APIMigrationException;
 import org.wso2.carbon.apimgt.migration.client.sp_migration.APIMStatMigrationException;
 import org.wso2.carbon.apimgt.migration.util.RegistryService;
@@ -39,7 +40,7 @@ public class MigrateFrom210 extends MigrationClientBase implements MigrationClie
 
     public MigrateFrom210(String tenantArguments, String blackListTenantArguments, String tenantRange,
                           RegistryService registryService, TenantManager tenantManager)
-            throws UserStoreException, APIMigrationException {
+            throws UserStoreException, APIMigrationException, APIManagementException {
         super(tenantArguments, blackListTenantArguments, tenantRange, tenantManager);
         this.registryService = registryService;
     }

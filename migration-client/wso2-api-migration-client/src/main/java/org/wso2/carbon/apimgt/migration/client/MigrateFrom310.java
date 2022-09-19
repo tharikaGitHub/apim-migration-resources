@@ -75,7 +75,8 @@ public class MigrateFrom310 extends MigrationClientBase implements MigrationClie
     private RegistryService registryService;
 
     public MigrateFrom310(String tenantArguments, String blackListTenantArguments, String tenantRange,
-                          RegistryService registryService, TenantManager tenantManager) throws UserStoreException {
+                          RegistryService registryService, TenantManager tenantManager)
+            throws UserStoreException, APIManagementException {
 
         super(tenantArguments, blackListTenantArguments, tenantRange, tenantManager);
         this.registryService = registryService;

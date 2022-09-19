@@ -20,6 +20,7 @@ package org.wso2.carbon.apimgt.migration.client;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.wso2.carbon.apimgt.api.APIManagementException;
 import org.wso2.carbon.apimgt.api.model.APIStatus;
 import org.wso2.carbon.apimgt.impl.APIConstants;
 import org.wso2.carbon.apimgt.impl.utils.APIMgtDBUtil;
@@ -68,7 +69,7 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
 
     public MigrateFrom19to110(String tenantArguments, String blackListTenantArguments, String tenantRange,
                               RegistryService registryService, TenantManager tenantManager, boolean removeDecryptionFailedKeysFromDB)
-            throws UserStoreException {
+            throws UserStoreException, APIManagementException {
         super(tenantArguments, blackListTenantArguments, tenantRange, tenantManager);
         this.registryService = registryService;
         this.removeDecryptionFailedKeysFromDB = removeDecryptionFailedKeysFromDB;

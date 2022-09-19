@@ -18,6 +18,7 @@
 
 package org.wso2.carbon.apimgt.migration.client;
 
+import org.wso2.carbon.apimgt.api.APIManagementException;
 import org.wso2.carbon.apimgt.migration.util.Constants;
 import org.wso2.carbon.apimgt.migration.util.RegistryService;
 import org.wso2.carbon.user.api.UserStoreException;
@@ -33,7 +34,7 @@ public final class MigrationClientFactory {
 
     public static void initFactory(String tenants, String blackListTenants, String tenantRange,
                                    RegistryService registryService, TenantManager tenantManager, boolean removeDecryptionFailedKeysFromDB)
-            throws UserStoreException {
+            throws UserStoreException, APIManagementException {
         String[] version_1_8_x = new String[]{Constants.VERSION_1_8};
         String[] version_1_9_x = new String[]{Constants.VERSION_1_9, Constants.VERSION_1_9_1};
         String[] version_1_10_x = new String[]{Constants.VERSION_1_10};

@@ -40,7 +40,7 @@ public class MigrateFrom200 extends MigrationClientBase implements MigrationClie
 
     public MigrateFrom200(String tenantArguments, String blackListTenantArguments, String tenantRange,
                           RegistryService registryService, TenantManager tenantManager)
-            throws UserStoreException, APIMigrationException {
+            throws UserStoreException, APIMigrationException, APIManagementException {
         super(tenantArguments, blackListTenantArguments, tenantRange, tenantManager);
         this.registryService = registryService;
     }

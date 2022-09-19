@@ -50,7 +50,7 @@ public class MigrateUUIDToDB extends MigrationClientBase{
     private static final Log log = LogFactory.getLog(ScopeRoleMappingPopulationClient.class);
     APIMgtDAO apiMgtDAO = APIMgtDAO.getInstance();
     public MigrateUUIDToDB(String tenantArguments, String blackListTenantArguments, String tenantRange,
-                           TenantManager tenantManager) throws UserStoreException {
+                           TenantManager tenantManager) throws UserStoreException, APIManagementException {
         super(tenantArguments, blackListTenantArguments, tenantRange, tenantManager);
         this.tenantManager = tenantManager;
     }

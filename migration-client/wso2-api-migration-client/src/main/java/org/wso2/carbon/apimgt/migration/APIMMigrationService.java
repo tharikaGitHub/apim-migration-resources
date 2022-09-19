@@ -18,6 +18,7 @@ package org.wso2.carbon.apimgt.migration;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.wso2.carbon.apimgt.api.APIManagementException;
 import org.wso2.carbon.apimgt.impl.utils.APIMgtDBUtil;
 import org.wso2.carbon.apimgt.migration.client.*;
 import org.wso2.carbon.apimgt.migration.client.internal.ServiceHolder;
@@ -411,7 +412,7 @@ public class APIMMigrationService implements ServerStartupObserver {
                     MigrationExecutor.execute(arguments);
                 }
             }
-        } catch (APIMigrationException e) {
+        } catch (APIMigrationException | APIManagementException e) {
             log.error("WSO2 API-M Migration Task : API Management  exception occurred while migrating", e);
         } catch (UserStoreException e) {
             log.error("WSO2 API-M Migration Task : User store  exception occurred while migrating", e);

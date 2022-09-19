@@ -97,7 +97,7 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
     private RegistryService registryService;
 
     public MigrateFrom18to19(String tenantArguments, String blackListTenantArguments, String tenantRange,
-            RegistryService registryService, TenantManager tenantManager) throws UserStoreException {
+            RegistryService registryService, TenantManager tenantManager) throws UserStoreException, APIManagementException {
         super(tenantArguments, blackListTenantArguments, tenantRange, tenantManager);
         this.registryService = registryService;
     }
