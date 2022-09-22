@@ -310,7 +310,7 @@ public class RegistryServiceImpl implements RegistryService {
     public void updateRXTResource(String rxtName, final String rxtPayload) throws UserStoreException, RegistryException {
         if (tenant == null) {
             throw new IllegalStateException("The tenant flow has not been started, "
-                                            + "'RegistryService.startTenantFlow(Tenant tenant)' needs to be called");
+                    + "'RegistryService.startTenantFlow(Tenant tenant)' needs to be called");
         }
         ServiceHolder.getTenantRegLoader().loadTenantRegistry(tenant.getId());
 
@@ -322,34 +322,38 @@ public class RegistryServiceImpl implements RegistryService {
         // This is "registry" is a governance registry instance, therefore
         // calculate the relative path to governance.
         String govRelativePath = RegistryUtils.getRelativePathToOriginal(resourcePath,
-                                          APIUtil.getMountedPath(RegistryContext.getBaseInstance(),
-                                                                     RegistryConstants.GOVERNANCE_REGISTRY_BASE_PATH));
+                APIUtil.getMountedPath(RegistryContext.getBaseInstance(),
+                        RegistryConstants.GOVERNANCE_REGISTRY_BASE_PATH));
         // calculate resource path
         RegistryAuthorizationManager authorizationManager = new RegistryAuthorizationManager(
-                                                                                ServiceReferenceHolder.getUserRealm());
+                ServiceReferenceHolder.getUserRealm());
         resourcePath = authorizationManager.computePathOnMount(resourcePath);
         org.wso2.carbon.user.api.AuthorizationManager authManager = ServiceReferenceHolder.getInstance()
-                                                                                          .getRealmService()
-                                                                                          .getTenantUserRealm(tenant.getId())
-                                                                                          .getAuthorizationManager();
+                .getRealmService()
+                .getTenantUserRealm(tenant.getId())
+                .getAuthorizationManager();
 
-        if (registry.resourceExists(govRelativePath)) {     
+        if (registry.resourceExists(govRelativePath)) {
             Resource resource = registry.get(govRelativePath);
             resource.setContent(rxtPayload.getBytes(Charset.defaultCharset()));
             resource.setMediaType(APIConstants.RXT_MEDIA_TYPE);
-            registry.put(govRelativePath, resource); 
+            registry.put(govRelativePath, resource);
+            log.info("Updating the governance registry: " + govRelativePath + " for tenant id: " + tenant.getId());
             authManager.authorizeRole(APIConstants.ANONYMOUS_ROLE, resourcePath, ActionConstants.GET);
-        }                
-        
+            log.info("Authorizing role: " + APIConstants.ANONYMOUS_ROLE + " on the registry resource: "
+                    + resourcePath + " for tenant id: " + tenant.getId());
+        }
+
         //Update RXT UI Configuration
         Registry configRegistry = ServiceHolder.getRegistryService().getConfigSystemRegistry(tenant.getId());
         String rxtUIConfigPath = Constants.GOVERNANCE_ARTIFACT_CONFIGURATION_PATH + APIConstants.API_KEY;
-        if(configRegistry.resourceExists(rxtUIConfigPath)) {
+        if (configRegistry.resourceExists(rxtUIConfigPath)) {
             Resource rxtUIResource = configRegistry.get(rxtUIConfigPath);
             rxtUIResource.setContent(ResourceUtil.getArtifactUIContentFromConfig(rxtPayload));
             configRegistry.put(rxtUIConfigPath, rxtUIResource);
-            }
-
+            log.info("Updating the rxt ui resource in config registry: " + rxtUIConfigPath + " for tenant id: "
+                    + tenant.getId());
+        }
     }
 
     /**

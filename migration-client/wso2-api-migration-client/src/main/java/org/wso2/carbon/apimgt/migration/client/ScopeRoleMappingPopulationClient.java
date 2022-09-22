@@ -61,7 +61,8 @@ public class ScopeRoleMappingPopulationClient extends MigrationClientBase implem
     private RegistryService registryService;
 
     public ScopeRoleMappingPopulationClient(String tenantArguments, String blackListTenantArguments, String tenantRange,
-                                            RegistryService registryService, TenantManager tenantManager) throws UserStoreException {
+                                            RegistryService registryService, TenantManager tenantManager)
+            throws UserStoreException, APIManagementException {
         super(tenantArguments, blackListTenantArguments, tenantRange, tenantManager);
         this.registryService = registryService;
     }

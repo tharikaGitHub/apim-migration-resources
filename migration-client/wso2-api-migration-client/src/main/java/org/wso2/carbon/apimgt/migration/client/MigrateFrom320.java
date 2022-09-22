@@ -126,7 +126,8 @@ public class MigrateFrom320 extends MigrationClientBase implements MigrationClie
     private List<Tenant> tenants;
 
     public MigrateFrom320(String tenantArguments, String blackListTenantArguments, String tenantRange,
-                          RegistryService registryService, TenantManager tenantManager) throws UserStoreException {
+                          RegistryService registryService, TenantManager tenantManager)
+            throws UserStoreException, APIManagementException {
         super(tenantArguments, blackListTenantArguments, tenantRange, tenantManager);
         this.registryService = registryService;
         this.tenantManager = tenantManager;
