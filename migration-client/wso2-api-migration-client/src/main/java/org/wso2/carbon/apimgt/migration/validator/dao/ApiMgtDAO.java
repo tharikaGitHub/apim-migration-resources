@@ -1,10 +1,31 @@
+/*
+ * Copyright (c) 2022, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
+ *
+ * WSO2 Inc. licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.wso2.carbon.apimgt.migration.validator.dao;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.apimgt.api.model.URITemplate;
+import org.wso2.carbon.apimgt.impl.APIConstants;
 import org.wso2.carbon.apimgt.impl.utils.APIMgtDBUtil;
 import org.wso2.carbon.apimgt.impl.utils.APIUtil;
+import org.wso2.carbon.apimgt.migration.validator.dto.ApplicationDTO;
+import org.wso2.carbon.apimgt.migration.validator.dto.ApplicationKeyMappingDTO;
 
 import java.io.InputStream;
 import java.sql.Connection;
@@ -76,5 +97,72 @@ public class ApiMgtDAO {
             log.error("Error on retrieving URLTemplates for apiResourceLevelAuthSchemeValidation validation", e);
         }
         return urlTemplates;
+    }
+
+    public Set<ApplicationDTO> getAllApplications() {
+        final String query = SQLConstants.GET_ALL_APPLICATIONS;
+        Set<ApplicationDTO> applications = new HashSet<>();
+        try (Connection connection = APIMgtDBUtil.getConnection()) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    while (resultSet.next()) {
+                        ApplicationDTO application = new ApplicationDTO();
+                        application.setApplicationId(resultSet.getInt("APPLICATION_ID"));
+                        application.setName(resultSet.getString("NAME"));
+                        application.setSubscriberId(resultSet.getString("SUBSCRIBER_ID"));
+                        application.setStatus(resultSet.getString("APPLICATION_STATUS"));
+                        application.setCreatedBy(resultSet.getString("CREATED_BY"));
+                        application.setUuid(resultSet.getString("UUID"));
+                        applications.add(application);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            log.error("Error on retrieving Applications for appThirdPartyKMValidation", e);
+        }
+        return applications;
+    }
+
+    public Set<ApplicationKeyMappingDTO> getKeyMappingFromApplicationId(int applicationId) {
+        final String query = SQLConstants.GET_APPLICATION_KEY_MAPPING_BY_APP_ID_AND_KEY_TYPE;
+        Set<ApplicationKeyMappingDTO> applicationKeyMappings = new HashSet<>();
+        try (Connection connection = APIMgtDBUtil.getConnection()) {
+            try (PreparedStatement ps = connection.prepareStatement(query)) {
+                ps.setInt(1, applicationId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        ApplicationKeyMappingDTO applicationKeyMappingDTO = new ApplicationKeyMappingDTO();
+                        applicationKeyMappingDTO.setApplicationId(rs.getInt("APPLICATION_ID"));
+                        applicationKeyMappingDTO.setConsumerKey(rs.getString("CONSUMER_KEY"));
+                        applicationKeyMappingDTO.setKeyType(rs.getString("KEY_TYPE"));
+                        applicationKeyMappingDTO.setState(rs.getString("STATE"));
+                        String createMode = rs.getString("CREATE_MODE");
+                        if (StringUtils.isEmpty(createMode)) {
+                            createMode = APIConstants.OAuthAppMode.CREATED.name();
+                        }
+                        applicationKeyMappingDTO.setCreatedMode(createMode);
+                        applicationKeyMappings.add(applicationKeyMappingDTO);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            log.error("Error on retrieving Application Key Mappings for appThirdPartyKMValidation", e);
+        }
+        return applicationKeyMappings;
+    }
+
+    public boolean checkIfConsumerAppExists(String consumerKey) {
+        final String query = SQLConstants.GET_IF_IDN_OAUTH_CONSUMER_APP_EXISTS;
+        try (Connection connection = APIMgtDBUtil.getConnection()) {
+            try (PreparedStatement ps = connection.prepareStatement(query)) {
+                ps.setString(1, consumerKey);
+                try (ResultSet rs = ps.executeQuery()) {
+                    return rs.next();
+                }
+            }
+        } catch (SQLException e) {
+            log.error("Error on retrieving Consumer Secret for appThirdPartyKMValidation", e);
+        }
+        return false;
     }
 }

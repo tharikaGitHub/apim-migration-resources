@@ -1,3 +1,20 @@
+/*
+ * Copyright (c) 2022, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
+ *
+ * WSO2 Inc. licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.wso2.carbon.apimgt.migration.validator;
 
 import org.apache.commons.logging.Log;
@@ -8,9 +25,12 @@ import org.wso2.carbon.apimgt.impl.utils.APIUtil;
 import org.wso2.carbon.apimgt.migration.APIMigrationException;
 import org.wso2.carbon.apimgt.migration.client.internal.ServiceHolder;
 import org.wso2.carbon.apimgt.migration.util.Constants;
+import org.wso2.carbon.apimgt.migration.validator.dao.ApiMgtDAO;
+import org.wso2.carbon.apimgt.migration.validator.dto.ApplicationDTO;
 import org.wso2.carbon.apimgt.migration.validator.utils.Utility;
 import org.wso2.carbon.apimgt.migration.validator.utils.Utils;
 import org.wso2.carbon.apimgt.migration.validator.utils.UtilsFactory;
+import org.wso2.carbon.apimgt.migration.validator.validators.ApplicationValidator;
 import org.wso2.carbon.apimgt.migration.validator.validators.Validator;
 import org.wso2.carbon.apimgt.migration.validator.validators.ValidatorFactory;
 import org.wso2.carbon.governance.api.generic.GenericArtifactManager;
@@ -27,6 +47,7 @@ import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 public class ValidationHandler {
     private static final Log log = LogFactory.getLog(ValidationHandler.class);
@@ -40,7 +61,11 @@ public class ValidationHandler {
             Constants.preValidationService.API_DEFINITION_VALIDATION,
             Constants.preValidationService.API_RESOURCE_LEVEL_AUTH_SCHEME_VALIDATION,
     };
+    private final String[] applicationValidatorList = {
+            Constants.preValidationService.APP_THIRD_PARTY_KM_VALIDATION,
+    };
     private final Validator validator;
+    private final ApplicationValidator applicationValidator;
 
     public ValidationHandler(String migrateFromVersion, String preMigrationStep,
                              String tenantArguments, String tenantRangeArgs) {
@@ -51,21 +76,49 @@ public class ValidationHandler {
         Utils utils = utilsFactory.getVersionUtils(migrateFromVersion);
         ValidatorFactory validatorFactory = new ValidatorFactory(utils);
         this.validator = validatorFactory.getVersionValidator(migratedVersion);
+        this.applicationValidator = new ApplicationValidator(utils);
     }
 
     public void doValidation() throws UserStoreException, APIMigrationException {
         List<Tenant> tenants = loadTenants();
         if (Arrays.asList(validatorList).contains(preMigrationStep)) {
-            for (Tenant tenant : tenants) {
-                validateRegistryData(tenant, preMigrationStep);
-            }
+            log.info("Running validator step : " + preMigrationStep + " for tenants");
+            doTenantValidation(preMigrationStep);
+        } else if (Arrays.asList(applicationValidatorList).contains(preMigrationStep)) {
+            log.info("Running validator step : " + preMigrationStep + " for applications");
+            doApplicationValidation(preMigrationStep);
         } else {
             log.info("Running all validator steps.........");
             for (String validatorStep : validatorList) {
-                for (Tenant tenant : tenants) {
-                    validateRegistryData(tenant, validatorStep);
-                }
+                doTenantValidation(validatorStep);
             }
+            for (String appValidatorStep : applicationValidatorList) {
+                doApplicationValidation(appValidatorStep);
+            }
+        }
+    }
+
+    /**
+     * Do tenant wise validations by iterating all tenants
+     * @param preMigrationStep pre-validation step to run
+     * @throws UserStoreException if an error occurs in tenant loading
+     * @throws APIMigrationException if an error occurs while accessing registry
+     */
+    private void doTenantValidation(String preMigrationStep) throws UserStoreException, APIMigrationException {
+        List<Tenant> tenants = loadTenants();
+        for (Tenant tenant : tenants) {
+            validateRegistryData(tenant, preMigrationStep);
+        }
+    }
+
+    /**
+     * Do application wise validation by iterating all applications
+     * @param preMigrationStep pre-validation step to run
+     */
+    private void doApplicationValidation(String preMigrationStep) {
+        List<ApplicationDTO> applications = loadApplications();
+        for (ApplicationDTO application : applications) {
+            applicationValidator.validate(application, preMigrationStep);
         }
     }
 
@@ -175,5 +228,10 @@ public class ValidationHandler {
             }
         }
         return tenantsArray;
+    }
+
+    private List<ApplicationDTO> loadApplications() {
+        Set<ApplicationDTO> applications = ApiMgtDAO.getInstance().getAllApplications();
+        return new ArrayList<>(applications);
     }
 }
