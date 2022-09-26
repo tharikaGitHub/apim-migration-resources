@@ -42,5 +42,33 @@ public class SQLConstants {
                     "   API_ID = ? " +
                     " ORDER BY " +
                     "   URL_MAPPING_ID ASC ";
+    public static final String GET_ALL_APPLICATIONS =
+            " SELECT " +
+                    "   APP.APPLICATION_ID,   " +
+                    "   APP.NAME,   " +
+                    "   APP.SUBSCRIBER_ID,   " +
+                    "   APP.APPLICATION_STATUS,   " +
+                    "   APP.CREATED_BY,   " +
+                    "   APP.UUID   " +
+                    " FROM " +
+                    "   AM_APPLICATION APP   ";
+    public static final String GET_APPLICATION_KEY_MAPPING_BY_APP_ID_AND_KEY_TYPE =
+            "SELECT " +
+                    "   APP_KM.APPLICATION_ID,  " +
+                    "   APP_KM.CONSUMER_KEY,    " +
+                    "   APP_KM.KEY_TYPE,    " +
+                    "   APP_KM.STATE,   " +
+                    "   APP_KM.CREATE_MODE  " +
+                    " FROM " +
+                    "   AM_APPLICATION_KEY_MAPPING APP_KM   " +
+                    " WHERE " +
+                    "   APP_KM.APPLICATION_ID = ?   ";
+    public static final String GET_IF_IDN_OAUTH_CONSUMER_APP_EXISTS =
+            "SELECT" +
+                    "   1  " +
+                    " FROM " +
+                    "   IDN_OAUTH_CONSUMER_APPS OC_APP  " +
+                    " WHERE " +
+                    "   OC_APP.CONSUMER_KEY = ?";
 }
 
