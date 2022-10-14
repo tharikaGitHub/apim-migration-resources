@@ -86,7 +86,7 @@ public class V400Validator extends Validator {
             }
         } catch (APIManagementException e) {
             log.error("Error while validating open API definition for " + apiName + " version: " + apiVersion
-                    + " type: " + apiType + "", e);
+                    + " type: " + apiType, e);
         } catch (Exception e) {
             log.error("An unhandled exception has occurred while validating open API definition for " + apiName
                     + " version: " + apiVersion + " type: " + apiType, e);
