@@ -514,7 +514,7 @@ public class MigrateFrom320 extends MigrationClientBase implements MigrationClie
     }
 
     public void migrateEndpointCertificates() {
-
+        boolean isError = false;
         File trustStoreFile = new File(TRUST_STORE);
 
         try {
@@ -535,12 +535,20 @@ public class MigrateFrom320 extends MigrationClientBase implements MigrationClie
                         certificateMap.put(alias, base64EncodedString);
                         log.info("WSO2 API-M Migration Task : Adding encoded certificate content of alias: " + alias
                                 + " to DB");
+                    } else {
+                        log.error("WSO2 API-M Migration Task : Error while retrieving endpoint certificate for" +
+                                " alias: " + alias + ". The certificate does not exist in the trust store.");
+                        isError = true;
                     }
                 }
             } else {
                 log.info("WSO2 API-M Migration Task : No endpoint certificates defined");
             }
             APIMgtDAO.getInstance().updateEndpointCertificates(certificateMap);
+            if (isError) {
+                throw new APIMigrationException("WSO2 API-M Migration Task : Error/s occurred during Endpoint " +
+                        "Certificate Migration, hence could not migrate certificates for some artifacts.");
+            }
         } catch (NoSuchAlgorithmException | IOException | CertificateException
                 | KeyStoreException | APIMigrationException e) {
             log.error("WSO2 API-M Migration Task : Error while Migrating Endpoint Certificates", e);

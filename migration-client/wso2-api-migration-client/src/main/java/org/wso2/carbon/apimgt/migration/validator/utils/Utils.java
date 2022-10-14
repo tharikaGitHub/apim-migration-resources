@@ -36,8 +36,10 @@ public abstract class Utils {
             JSONParser parser = new JSONParser();
             if (registry.resourceExists(resourcePath + APIConstants.API_OAS_DEFINITION_RESOURCE_NAME)) {
                 Resource apiDocResource = registry.get(resourcePath + APIConstants.API_OAS_DEFINITION_RESOURCE_NAME);
-                apiDocContent = new String((byte[]) apiDocResource.getContent(), Charset.defaultCharset());
-                parser.parse(apiDocContent);
+                if (apiDocResource.getContent() != null) {
+                    apiDocContent = new String((byte[]) apiDocResource.getContent(), Charset.defaultCharset());
+                    parser.parse(apiDocContent);
+                }
             } else {
                 // resource not found
                 log.warn("No resources found");
@@ -136,7 +138,8 @@ public abstract class Utils {
         return migrateFromVersion;
     }
 
-    public void saveInvalidDefinition(String apiId, String apiDefinition) {
+    public void saveInvalidDefinition(String apiName, String apiVersion, String provider, String apiId,
+                                      String apiDefinition) {
         String dirName = CarbonUtils.getCarbonHome() + File.separator + "invalid-swagger-definitions";
         String fileName = dirName + File.separator + apiId + ".json";
         File directory = new File(dirName);
@@ -146,9 +149,11 @@ public abstract class Utils {
         try (FileOutputStream outStream = new FileOutputStream(fileName)) {
             byte[] definitionBytes = apiDefinition.getBytes();
             outStream.write(definitionBytes);
-            log.info("Invalid definition saved successfully to " + fileName);
+            log.info("Invalid definition of API: {name: " + apiName + " version: " + apiVersion + " provider: "
+                    + provider + "} is saved successfully to " + fileName);
         } catch (IOException e) {
-            log.error("Error while saving the invalid swagger definition to the file: " + fileName, e);
+            log.error("Error while saving the invalid swagger definition of API: {name: " + apiName + " version: "
+                    + apiVersion + " provider: " + provider + "} to the file: " + fileName, e);
         }
     }
 }
